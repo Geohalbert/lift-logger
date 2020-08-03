@@ -80,3 +80,10 @@ buck-out/
 # Expo
 .expo/*
 web-build/
+ios/GoogleService-Info.plist
+ios/liftlogger/
+ios/liftlogger.xcodeproj/
+ios/liftlogger.cworkspace/
+ios/liftlogger/Pods/
+ios/liftlogger/PodFile.lock
+ios/GoogleService-Info.plist

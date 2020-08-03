@@ -18,13 +18,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.halbert.liftlogger"
+      "bundleIdentifier": "com.geohalbert.liftlogger"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "android": {
-      "package": "org.halbert.liftlogger"
+      "package": "com.geohalbert.liftlogger"
     },
     "entryPoint": "node_modules/expo/AppEntry.js"
   }
