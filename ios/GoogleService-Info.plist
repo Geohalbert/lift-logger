@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>149650347855-l9sge0gq3gud3fjicic57s52qekbsskp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.149650347855-l9sge0gq3gud3fjicic57s52qekbsskp</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCHEY8bGKLSmC40GbU27cP67zymJE26hAo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>149650347855</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.halbert.liftlogger</string>
+	<key>PROJECT_ID</key>
+	<string>lift-logger-7d78a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>lift-logger-7d78a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:149650347855:ios:a9520fc465824fbfd7573a</string>
+	<key>DATABASE_URL</key>
+	<string>https://lift-logger-7d78a.firebaseio.com</string>
+</dict>
+</plist>
