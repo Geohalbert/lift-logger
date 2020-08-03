@@ -34,7 +34,7 @@ export const login = () => {
 
       dispatch(getUser(response.user.uid));
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
 };
@@ -49,7 +49,7 @@ export const getUser = uid => {
 
       dispatch({ type: LOGIN, payload: user.data() });
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
 };
@@ -75,7 +75,7 @@ export const register = () => {
         dispatch({ type: REGISTER, payload: user });
       }
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
 };
