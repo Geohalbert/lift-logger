@@ -87,3 +87,4 @@ ios/liftlogger.cworkspace/
 ios/liftlogger/Pods/
 ios/liftlogger/PodFile.lock
 ios/GoogleService-Info.plist
+package-lock.json
