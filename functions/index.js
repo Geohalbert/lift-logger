@@ -1,5 +1,8 @@
-const functions = require("firebase-functions");
+const onUserCreated = require("./onUserCreated.js");
 
-const admin = require("firebase-admin");
+/* Functions */
+exports.onUserCreated = onUserCreated;
 
-admin.initializeApp();
+/* HTTP Functions */
+
+/* PubSubs */
