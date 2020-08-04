@@ -11,6 +11,7 @@ module.exports = functions.auth.user().onCreate(user => {
     email: email && email.toLowerCase ? email.toLowerCase() : email,
     uid: user.uid,
     createdAt: stamp,
-    updatedAt: stamp
+    updatedAt: stamp,
+    userWorkouts: []
   });
 });
