@@ -3,14 +3,22 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 
 import * as firebase from "firebase/app";
 import "firebase/auth";
-import colors from "../../assets/colors";
-class AuthLoadingScreen extends Component {
+import colors from "../assets/colors";
+
+export default class AuthLoadingScreen extends React.Component {
   componentDidMount() {
     this.checkIfLoggedIn();
   }
 
   checkIfLoggedIn = () => {
     this.unsubscribe = firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        //navigate to home screen
+        this.props.navigation.navigate("App", { user });
+      } else {
+        //login screen
+        this.props.navigation.navigate("Auth");
+      }
       this.props.navigation.navigate(user ? "App" : "Auth");
     });
   };
@@ -27,7 +35,6 @@ class AuthLoadingScreen extends Component {
     );
   }
 }
-export default AuthLoadingScreen;
 
 const styles = StyleSheet.create({
   container: {
