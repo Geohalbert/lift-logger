@@ -3,6 +3,7 @@ import { createDrawerNavigator, DrawerItems } from "react-navigation-drawer";
 import { createStackNavigator } from "react-navigation-stack";
 
 import LoginScreen from "../screens/LoginScreen";
+import HomeScreen from "../screens/HomeScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import AuthLoadingScreen from "../screens/AuthLoadingScreen";
@@ -31,6 +32,13 @@ const AuthStack = createSwitchNavigator({
 
 const AppStack = createStackNavigator({
   Home: {
+    screen: HomeScreen,
+    navigationOptions: {
+      title: "Home",
+      ...defaultStyle
+    }
+  },
+  Profile: {
     screen: ProfileScreen,
     navigationOptions: {
       title: "Profile",
