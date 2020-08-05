@@ -13,7 +13,7 @@ import { updateEmail, updatePassword, register } from "../actions/user";
 class RegisterScreen extends React.Component {
   handleRegister = () => {
     this.props.register();
-    this.props.navigation.navigate("ProfileScreen");
+    this.props.navigation.navigate("App");
   };
 
   render() {
