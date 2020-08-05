@@ -68,10 +68,6 @@ export const register = () => {
           email: email
         };
 
-        db.collection("users")
-          .doc(response.user.uid)
-          .set(user);
-
         dispatch({ type: REGISTER, payload: user });
       }
     } catch (e) {
