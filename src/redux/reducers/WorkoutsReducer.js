@@ -1,8 +1,9 @@
 const initialState = {
   workouts: [],
-  workoutsInProgress: [],
+  workoutsIncomplete: [],
   workoutsComplete: [],
-  isLoadingWorkouts: true
+  isLoadingWorkouts: true,
+  image: null
 };
 
 const workouts = (state = initialState, action) => {
@@ -11,16 +12,16 @@ const workouts = (state = initialState, action) => {
       return {
         ...state,
         workouts: action.payload,
-        workoutsInProgress: action.payload.filter(workout => !workout.complete),
+        workoutsIncomplete: action.payload.filter(workout => !workout.complete),
         workoutsComplete: action.payload.filter(workout => workout.complete)
       };
     case "ADD_WORKOUT":
       return {
         ...state,
         workouts: [action.payload, ...state.workouts],
-        workoutsInProgress: [action.payload, ...state.workoutsInProgress]
+        workoutsIncomplete: [action.payload, ...state.workoutsIncomplete]
       };
-    case "MARK_WORKOUT_AS_COMPLETE":
+    case "MARK_WORKOUT_AS_READ":
       return {
         ...state,
         workouts: state.workouts.map(workout => {
@@ -30,7 +31,7 @@ const workouts = (state = initialState, action) => {
           return workout;
         }),
         workoutsComplete: [...state.workoutsComplete, action.payload],
-        workoutsInProgress: state.workoutsInProgress.filter(
+        workoutsIncomplete: state.workoutsIncomplete.filter(
           workout => workout.name !== action.payload.name
         )
       };
@@ -39,7 +40,7 @@ const workouts = (state = initialState, action) => {
         ...state,
         isLoadingWorkouts: action.payload
       };
-    case "MARK_WORKOUT_AS_INCOMPLETE":
+    case "MARK_WORKOUT_AS_UNREAD":
       return {
         ...state,
         workouts: state.workouts.map(workout => {
@@ -51,7 +52,7 @@ const workouts = (state = initialState, action) => {
         workoutsComplete: state.workoutsComplete.filter(
           workout => workout.name !== action.payload.name
         ),
-        workoutsInProgress: [...state.workoutsInProgress, action.payload]
+        workoutsIncomplete: [...state.workoutsIncomplete, action.payload]
       };
     case "DELETE_WORKOUT":
       return {
@@ -62,11 +63,32 @@ const workouts = (state = initialState, action) => {
         workoutsComplete: state.workoutsComplete.filter(
           workout => workout.name !== action.payload.name
         ),
-        workoutsInProgress: state.workoutsInProgress.filter(
+        workoutsIncomplete: state.workoutsIncomplete.filter(
           workout => workout.name !== action.payload.name
         )
       };
-
+    case "UPDATE_WORKOUT_IMAGE":
+      return {
+        ...state,
+        workouts: state.workouts.map(workout => {
+          if (workout.name == action.payload.name) {
+            return { ...workout, image: action.payload.uri };
+          }
+          return workout;
+        }),
+        workoutsIncomplete: state.workoutsIncomplete.map(workout => {
+          if (workout.name == action.payload.name) {
+            return { ...workout, image: action.payload.uri };
+          }
+          return workout;
+        }),
+        workoutsComplete: state.workoutsComplete.map(workout => {
+          if (workout.name == action.payload.name) {
+            return { ...workout, image: action.payload.uri };
+          }
+          return workout;
+        })
+      };
     default:
       return state;
   }
