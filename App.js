@@ -1,20 +1,20 @@
 import React from "react";
-import { createStore, applyMiddleware } from "redux";
+
 import { Provider } from "react-redux";
-import thunkMiddleware from "redux-thunk";
+import { firebaseConfig } from "./src/config/Firebase";
 
-import AppNavigator from "./src/navigation/AppNavigator";
-import reducer from "./src/reducers";
+import store from "./src/redux/store";
 
-const middleware = applyMiddleware(thunkMiddleware);
-const store = createStore(reducer, middleware);
+import LiftLogger from "./LiftLogger";
 
-export default class App extends React.Component {
-  render() {
-    return (
-      <Provider store={store}>
-        <AppNavigator />
-      </Provider>
-    );
-  }
+import firebase from "firebase/app";
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <LiftLogger />
+    </Provider>
+  );
 }
