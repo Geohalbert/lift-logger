@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-
+import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/HomeScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import CustomDrawerComponent from "../screens/DrawerNavigator/CustomDrawerComponent";
@@ -28,7 +28,7 @@ const defaultStyle = {
   }
 };
 
-export function getHeaderTitle(route) {
+getHeaderTitle = route => {
   const routeName = route.state
     ? route.state.routes[route.state.index].name
     : "Home";
@@ -41,7 +41,7 @@ export function getHeaderTitle(route) {
     case "WorkoutsComplete":
       return "Workouts Complete";
   }
-}
+};
 
 export const HomeTabNavigator = () => (
   <Tab.Navigator

@@ -1,4 +1,6 @@
-import Firebase, { db } from "../config/Firebase.js";
+import firebase from "../../config/firebase";
+import "firebase/auth";
+import "firebase/database";
 
 // define types
 

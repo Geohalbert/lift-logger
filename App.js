@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Provider } from "react-redux";
-import { firebaseConfig } from "./src/config/Firebase";
+import { firebaseConfig } from "./src/config/firebase";
 
 import store from "./src/redux/store";
 

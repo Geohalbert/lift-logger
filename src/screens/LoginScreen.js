@@ -63,13 +63,13 @@ class LoginScreen extends Component {
           //   .child(response.user.uid)
           //   .set({ email: response.user.email, uid: response.user.uid });
 
-          this.props.navigation.navigate("HomeScreen", response.user);
+          this.props.navigation.navigate("Home", response.user);
           //automatically signs in the user
         }
       } catch (error) {
         this.setState({ isLoading: false });
         if (error.code == "auth/email-already-in-use") {
-          alert("User already exists.Try loggin in");
+          alert("User already exists, try logging in");
         }
         console.log(error);
       }

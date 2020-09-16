@@ -359,7 +359,7 @@ class HomeScreen extends React.Component {
           <View style={styles.textInputContainer}>
             <TextInput
               style={styles.textInput}
-              placeholder="Enter Workout Name"
+              placeholder="Enter new workout name"
               placeholderTextColor={colors.txtPlaceholder}
               onChangeText={text => this.setState({ textInputData: text })}
               ref={component => {

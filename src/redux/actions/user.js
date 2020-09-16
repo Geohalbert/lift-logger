@@ -1,4 +1,4 @@
-import Firebase, { db } from "../config/Firebase.js";
+import firebase, { db } from "../config/firebase.js";
 
 // define types
 
@@ -27,7 +27,7 @@ export const login = () => {
   return async (dispatch, getState) => {
     try {
       const { email, password } = getState().user;
-      const response = await Firebase.auth().signInWithEmailAndPassword(
+      const response = await firebase.auth().signInWithEmailAndPassword(
         email,
         password
       );
@@ -58,7 +58,7 @@ export const register = () => {
   return async (dispatch, getState) => {
     try {
       const { email, password } = getState().user;
-      const response = await Firebase.auth().createUserWithEmailAndPassword(
+      const response = await firebase.auth().createUserWithEmailAndPassword(
         email,
         password
       );

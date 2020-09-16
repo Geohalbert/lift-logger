@@ -19,7 +19,7 @@ const firebaseConfig = {
   appId: APP_ID
 };
 
-// Initialize Firebase
-let Firebase = firebase.initializeApp(firebaseConfig);
+// Initialize firebase
+firebase.initializeApp(firebaseConfig);
 
-export default Firebase;
+export default firebase;

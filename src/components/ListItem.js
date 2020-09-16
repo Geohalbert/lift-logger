@@ -38,8 +38,16 @@ const ListItem = ({ item, children, marginVertical, editable, onPress }) => (
         )}
       </TouchableOpacity>
     </View>
-    <View style={styles.listItemTitleContainer}>
+    <View style={styles.workoutData}>
       <Text style={styles.listItemTitle}>{item.name}</Text>
+      <View style={styles.workoutTimes}>
+        <Text style={styles.date}>
+          {new Date(item.createdAt).toLocaleDateString("en-US")}
+        </Text>
+        <Text style={styles.date}>
+          {new Date(item.createdAt).toLocaleTimeString("en-US")}
+        </Text>
+      </View>
     </View>
     {children}
   </View>
@@ -56,8 +64,21 @@ const styles = StyleSheet.create({
   listItemContainer: {
     minHeight: 100,
     flexDirection: "row",
+    justifyContent: "space-between",
     backgroundColor: colors.listItemBg,
     alignItems: "center"
+  },
+  date: {
+    fontWeight: "100",
+    fontSize: 14,
+    color: colors.txtWhite
+  },
+  workoutTimes: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingRight: 10
   },
   imageContainer: {
     height: 70,
@@ -70,13 +91,13 @@ const styles = StyleSheet.create({
     width: null,
     borderRadius: 35
   },
-  listItemTitleContainer: {
+  workoutData: {
     flex: 1,
-    justifyContent: "center",
-    paddingLeft: 5
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingLeft: 10
   },
   listItemTitle: {
-    fontWeight: "100",
     fontSize: 22,
     color: colors.txtWhite
   }
