@@ -4,7 +4,14 @@ import colors from "../assets/colors";
 import NetworkImage from "react-native-image-progress";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 
-const ListItem = ({ item, children, marginVertical, editable, onPress }) => (
+const ListItem = ({
+  item,
+  children,
+  marginVertical,
+  editable,
+  onPress,
+  navPress
+}) => (
   <View style={[styles.listItemContainer, { marginVertical }]}>
     <View style={styles.imageContainer}>
       <TouchableOpacity
@@ -42,7 +49,9 @@ const ListItem = ({ item, children, marginVertical, editable, onPress }) => (
       </TouchableOpacity>
     </View>
     <View style={styles.workoutData}>
-      <Text style={styles.listItemTitle}>{item.name}</Text>
+      <TouchableOpacity onPress={() => navPress(item)}>
+        <Text style={styles.listItemTitle}>{item.name}</Text>
+      </TouchableOpacity>
       <View style={styles.workoutTimes}>
         <Text style={styles.date}>
           {new Date(item.createdAt).toLocaleDateString("en-US")}
