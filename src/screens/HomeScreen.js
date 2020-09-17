@@ -265,6 +265,22 @@ class HomeScreen extends React.Component {
     );
   };
 
+  viewWorkout = async selectedWorkout => {
+    console.log(`selectedWorkout.key: ${selectedWorkout.key}`);
+    console.log(`selectedWorkout: ${JSON.stringify(selectedWorkout)}`);
+    // this.props.navigation.navigate("WorkoutScreen", {
+    //   currentWorkout: selectedWorkout,
+    //   workoutId: selectedWorkout.key
+    // });
+
+    // await firebase
+    // .database()
+    // .ref("workouts")
+    // .child(this.state.currentUser.uid)
+    // .child(selectedWorkout.key)
+    // .remove();
+  };
+
   renderItem = (item, index) => {
     let swipeoutButtons = [
       {
@@ -317,6 +333,7 @@ class HomeScreen extends React.Component {
         right={swipeoutButtons}
       >
         <ListItem
+          navPress={() => this.viewWorkout(item)}
           editable
           onPress={() => this.addWorkoutImage(item)}
           editable={true}
