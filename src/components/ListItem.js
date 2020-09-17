@@ -34,7 +34,10 @@ const ListItem = ({ item, children, marginVertical, editable, onPress }) => (
             imageStyle={{ borderRadius: 35 }}
           />
         ) : (
-          <Image source={require("../assets/icon.png")} style={styles.image} />
+          <Image
+            source={require("../assets/camera.png")}
+            style={styles.image}
+          />
         )}
       </TouchableOpacity>
     </View>
@@ -89,7 +92,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: null,
     width: null,
-    borderRadius: 35
+    borderRadius: 35,
+    resizeMode: "contain"
   },
   workoutData: {
     flex: 1,
