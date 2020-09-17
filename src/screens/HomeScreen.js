@@ -11,6 +11,7 @@ import {
   ActivityIndicator
 } from "react-native";
 import WorkoutCount from "../components/WorkoutCount";
+import WorkoutScreen from "./WorkoutScreen";
 import { Ionicons } from "@expo/vector-icons";
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
@@ -268,10 +269,10 @@ class HomeScreen extends React.Component {
   viewWorkout = async selectedWorkout => {
     console.log(`selectedWorkout.key: ${selectedWorkout.key}`);
     console.log(`selectedWorkout: ${JSON.stringify(selectedWorkout)}`);
-    // this.props.navigation.navigate("WorkoutScreen", {
-    //   currentWorkout: selectedWorkout,
-    //   workoutId: selectedWorkout.key
-    // });
+    this.props.navigation.navigate("Workout", {
+      currentWorkout: selectedWorkout,
+      workoutId: selectedWorkout.key
+    });
 
     // await firebase
     // .database()

@@ -5,6 +5,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/HomeScreen";
+import WorkoutScreen from "../screens/WorkoutScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import CustomDrawerComponent from "../screens/DrawerNavigator/CustomDrawerComponent";
 import WorkoutsIncompleteScreen from "../screens/HomeTabNavigator/WorkoutsIncompleteScreen";
@@ -36,6 +37,8 @@ getHeaderTitle = route => {
   switch (routeName) {
     case "Home":
       return "Workouts";
+    case "Workout":
+      return "Exercises";
     case "WorkoutsIncomplete":
       return "Workouts Incomplete";
     case "WorkoutsComplete":
@@ -83,21 +86,38 @@ export const HomeTabNavigator = () => (
     />
   </Tab.Navigator>
 );
+export const WorkoutTabNavigator = () => (
+  <Tab.Navigator
+    tabBarOptions={{
+      style: {
+        backgroundColor: colors.bgMain
+      },
+      activeTintColor: colors.logoColor,
+      inactiveTintColor: colors.bgTextInput
+    }}
+  >
+    <Tab.Screen
+      options={{ tabBarLabel: "Exercises" }}
+      name="Workout"
+      component={WorkoutScreen}
+    />
+  </Tab.Navigator>
+);
 
 export const HomeStackNavigator = ({ navigation }) => (
   <Stack.Navigator
     screenOptions={{
       headerStyle: { backgroundColor: colors.bgMain },
-      headerTintColor: "white",
-      headerLeft: () => (
-        <Ionicons
-          onPress={() => navigation.openDrawer()}
-          name="ios-menu"
-          size={30}
-          color="white"
-          style={{ marginLeft: 10 }}
-        />
-      )
+      headerTintColor: "white"
+      // headerLeft: () => (
+      //   <Ionicons
+      //     onPress={() => navigation.openDrawer()}
+      //     name="ios-menu"
+      //     size={30}
+      //     color="white"
+      //     style={{ marginLeft: 10 }}
+      //   />
+      // )
     }}
   >
     <Stack.Screen
@@ -106,6 +126,13 @@ export const HomeStackNavigator = ({ navigation }) => (
       })}
       name="Workouts"
       component={HomeTabNavigator}
+    />
+    <Stack.Screen
+      options={({ route }) => ({
+        title: getHeaderTitle(route)
+      })}
+      name="Workout"
+      component={WorkoutTabNavigator}
     />
   </Stack.Navigator>
 );
