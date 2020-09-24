@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   StyleSheet,
   Text,
@@ -26,13 +26,7 @@ import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
 import * as ImageHelpers from "../helpers/ImageHelpers";
 
-export default function WorkoutScreen({ navigation }) {
-  const [isFetching, setIsFetching] = useState(false);
-  const [isAddNewExerciseVisible, setIsAddNewExerciseVisible] = useState(false);
-  const [exercises, setExercises] = useState([]);
-  // const [, set] = useState();
-  // const [, set] = useState();
-  navigation.getParam("workoutId");
+class WorkoutScreen extends React.Component {
   // constructor() {
   //   super();
   //   this.state = {
@@ -261,15 +255,17 @@ export default function WorkoutScreen({ navigation }) {
   //   );
   // };
 
-  console.log("render Exercises");
-  return (
-    <View style={styles.container}>
-      <SafeAreaView />
+  render() {
+    console.log("render Exercises");
+    return (
+      <View style={styles.container}>
+        <SafeAreaView />
 
-      <Text>Exercises</Text>
-      <SafeAreaView />
-    </View>
-  );
+        <Text>Exercises</Text>
+        <SafeAreaView />
+      </View>
+    );
+  }
 }
 
 // const mapStateToProps = state => {
@@ -300,6 +296,7 @@ export default function WorkoutScreen({ navigation }) {
 // );
 
 // export default wrapper(WorkoutScreen);
+export default WorkoutScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -363,4 +360,3 @@ const styles = StyleSheet.create({
     borderTopColor: colors.borderColor
   }
 });
-5.4;

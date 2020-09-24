@@ -41,7 +41,7 @@ class HomeScreen extends React.Component {
     this.textInputRef = null;
   }
 
-  componentDidMount = async () => {
+  loadWorkouts = async () => {
     const user = this.props.currentUser;
     const currentUserData = await firebase
       .database()
@@ -58,13 +58,16 @@ class HomeScreen extends React.Component {
     const workoutsArray = snapshotToArray(workouts);
 
     this.setState({
-      currentUser: currentUserData.val(),
-      workouts: workoutsArray
+      currentUser: currentUserData.val()
     });
 
     this.props.loadWorkouts(workoutsArray.reverse());
     this.props.toggleIsLoadingWorkouts(false);
     console.log(this.props.workouts);
+  };
+
+  componentDidMount = () => {
+    this.loadWorkouts();
   };
 
   componentDidUpdate() {

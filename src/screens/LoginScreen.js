@@ -63,7 +63,7 @@ class LoginScreen extends Component {
           //   .child(response.user.uid)
           //   .set({ email: response.user.email, uid: response.user.uid });
 
-          this.props.navigation.navigate("Home", response.user);
+          navigation.navigate("Home", response.user);
           //automatically signs in the user
         }
       } catch (error) {
