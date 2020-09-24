@@ -38,7 +38,6 @@ class HomeScreen extends React.Component {
       textInputData: "",
       currentUser: {}
     };
-    console.log("constructor");
     this.textInputRef = null;
   }
 
@@ -59,7 +58,8 @@ class HomeScreen extends React.Component {
     const workoutsArray = snapshotToArray(workouts);
 
     this.setState({
-      currentUser: currentUserData.val()
+      currentUser: currentUserData.val(),
+      workouts: workoutsArray
     });
 
     this.props.loadWorkouts(workoutsArray.reverse());
@@ -132,16 +132,15 @@ class HomeScreen extends React.Component {
     }
   };
 
-  markAsComplete = async (selectedWorkout, index) => {
+  markAsComplete = async selectedWorkout => {
     try {
       this.props.toggleIsLoadingWorkouts(true);
-
-      await firebase
+      const newStamp = new Date().getTime();
+      const response = await firebase
         .database()
-        .ref("workouts")
-        .child(this.state.currentUser.uid)
+        .ref("users/" + this.state.currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
-        .update({ complete: true });
+        .update({ complete: true, updatedAt: newStamp });
 
       let workouts = this.state.workouts.map(workout => {
         if (workout.name == selectedWorkout.name) {
@@ -154,7 +153,7 @@ class HomeScreen extends React.Component {
         workout => workout.name !== selectedWorkout.name
       );
 
-      this.props.markWorkoutAsComplete(selectedWorkout);
+      this.props.markWorkoutAsComplete(response);
       this.props.toggleIsLoadingWorkouts(false);
     } catch (error) {
       console.log(error);
@@ -162,18 +161,18 @@ class HomeScreen extends React.Component {
     }
   };
 
-  markAsIncomplete = async (selectedWorkout, index) => {
+  markAsIncomplete = async selectedWorkout => {
     try {
       this.props.toggleIsLoadingWorkouts(true);
 
-      await firebase
+      const newStamp = new Date().getTime();
+      const response = await firebase
         .database()
-        .ref("workouts")
-        .child(this.state.currentUser.uid)
+        .ref("users/" + this.state.currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
-        .update({ complete: false });
+        .update({ complete: false, updatedAt: newStamp });
 
-      this.props.markWorkoutAsIncomplete(selectedWorkout);
+      this.props.markWorkoutAsIncomplete(response);
       this.props.toggleIsLoadingWorkouts(false);
     } catch (error) {
       console.log(error);
@@ -185,14 +184,13 @@ class HomeScreen extends React.Component {
     try {
       this.props.toggleIsLoadingWorkouts(true);
 
-      await firebase
+      const response = await firebase
         .database()
-        .ref("workouts")
-        .child(this.state.currentUser.uid)
+        .ref("users/" + this.state.currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .remove();
 
-      this.props.deleteWorkout(selectedWorkout);
+      this.props.deleteWorkout(response);
       this.props.toggleIsLoadingWorkouts(false);
     } catch (error) {
       console.log(error);
@@ -204,7 +202,6 @@ class HomeScreen extends React.Component {
     const ref = firebase
       .storage()
       .ref("workouts")
-      .child(this.state.currentUser.uid)
       .child(selectedWorkout.key);
 
     try {
@@ -216,8 +213,7 @@ class HomeScreen extends React.Component {
 
       await firebase
         .database()
-        .ref("workouts")
-        .child(this.state.currentUser.uid)
+        .ref("users/" + this.state.currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .update({ image: downloadUrl });
 
