@@ -52,8 +52,8 @@ class HomeScreen extends React.Component {
 
     const workouts = await firebase
       .database()
-      .ref("workouts")
-      .child(user.uid)
+      .ref("users/" + user.uid)
+      .child("workouts")
       .once("value");
 
     const workoutsArray = snapshotToArray(workouts);
@@ -90,8 +90,9 @@ class HomeScreen extends React.Component {
     try {
       const snapshot = await firebase
         .database()
-        .ref("workouts")
+        .ref("users")
         .child(this.state.currentUser.uid)
+        .child("workouts")
         .orderByChild("name")
         .equalTo(workout)
         .once("value");
@@ -102,24 +103,29 @@ class HomeScreen extends React.Component {
         const key = await firebase
           .database()
           .ref("workouts")
-          .child(this.state.currentUser.uid)
           .push().key;
 
         const stamp = new Date().getTime();
-        const workPay = {
+        const workoutPayload = {
+          uid: this.state.currentUser.uid,
           name: workout,
           complete: false,
           createdAt: stamp,
           updatedAt: stamp,
-          exercises: []
+          exercises: {}
         };
+
+        let updates = {};
+        updates["/workouts/" + key] = workoutPayload;
+        updates[
+          "/users/" + this.state.currentUser.uid + "/workouts/" + key
+        ] = workoutPayload;
+
         const response = await firebase
           .database()
-          .ref("workouts")
-          .child(this.state.currentUser.uid)
-          .child(key)
-          .set(workPay);
-        this.props.addWorkout({ ...workPay, key: key });
+          .ref()
+          .update(updates);
+        this.props.addWorkout({ ...workoutPayload, response: response });
       }
     } catch (error) {
       console.log(error);

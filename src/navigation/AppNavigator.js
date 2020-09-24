@@ -109,27 +109,27 @@ export const HomeStackNavigator = ({ navigation }) => (
     screenOptions={{
       headerStyle: { backgroundColor: colors.bgMain },
       headerTintColor: "white"
-      // headerLeft: () => (
-      //   <Ionicons
-      //     onPress={() => navigation.openDrawer()}
-      //     name="ios-menu"
-      //     size={30}
-      //     color="white"
-      //     style={{ marginLeft: 10 }}
-      //   />
-      // )
     }}
   >
     <Stack.Screen
       options={({ route }) => ({
-        title: getHeaderTitle(route)
+        title: getHeaderTitle(route),
+        headerLeft: () => (
+          <Ionicons
+            onPress={() => navigation.openDrawer()}
+            name="ios-menu"
+            size={30}
+            color="white"
+            style={{ marginLeft: 10 }}
+          />
+        )
       })}
       name="Workouts"
       component={HomeTabNavigator}
     />
     <Stack.Screen
-      options={({ route }) => ({
-        title: getHeaderTitle(route)
+      options={() => ({
+        title: "Exercises"
       })}
       name="Workout"
       component={WorkoutTabNavigator}

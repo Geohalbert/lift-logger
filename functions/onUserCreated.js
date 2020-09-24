@@ -11,8 +11,7 @@ module.exports = functions.auth.user().onCreate(async user => {
       email: email && email.toLowerCase ? email.toLowerCase() : email,
       uid: user.uid,
       createdAt: stamp,
-      updatedAt: stamp,
-      userWorkouts: []
+      updatedAt: stamp
     });
     return snapshot;
   } catch (error) {
