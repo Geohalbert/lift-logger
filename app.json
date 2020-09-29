@@ -27,5 +27,7 @@
       "package": "com.geohalbert.liftlogger"
     },
     "entryPoint": "node_modules/expo/AppEntry.js"
-  }
+  },
+  "displayName": "Lift Logger",
+  "name": "lift-logger"
 }

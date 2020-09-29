@@ -57,14 +57,7 @@ class LoginScreen extends Component {
           );
         if (response) {
           this.setState({ isLoading: false });
-          // const user = await firebase
-          //   .database()
-          //   .ref("users")
-          //   .child(response.user.uid)
-          //   .set({ email: response.user.email, uid: response.user.uid });
-
-          navigation.navigate("Home", response.user);
-          //automatically signs in the user
+          this.props.signIn(response.user);
         }
       } catch (error) {
         this.setState({ isLoading: false });

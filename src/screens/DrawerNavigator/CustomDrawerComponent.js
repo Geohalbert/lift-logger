@@ -8,7 +8,6 @@ import {
   Platform
 } from "react-native";
 
-// import { DrawerItems } from "react-navigation";
 import { DrawerItemList } from "@react-navigation/drawer";
 import colors from "../../assets/colors";
 import { Ionicons } from "@expo/vector-icons";

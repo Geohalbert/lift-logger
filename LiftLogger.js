@@ -5,16 +5,20 @@ import "firebase/auth";
 import { connect } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { Ionicons } from "@expo/vector-icons";
 import colors from "./src/assets/colors";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
-import { AppDrawerNavigator } from "./src/navigation/AppNavigator";
+import { RootStack, SettingsDrawer } from "./src/navigation/AppNavigator";
 
+import CustomDrawerComponent from "./src/screens/DrawerNavigator/CustomDrawerComponent";
+import SettingsScreen from "./src/screens/SettingsScreen";
 import WelcomeScreen from "./src/navigation/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import SplashScreen from "./src/screens/SplashScreen";
 
 const Stack = createStackNavigator();
-
+const Drawer = createDrawerNavigator();
 class LiftLogger extends Component {
   componentDidMount() {
     this.checkIfLoggedIn();
@@ -60,7 +64,24 @@ class LiftLogger extends Component {
           </Stack.Navigator>
         ) : (
           <ActionSheetProvider>
-            <AppDrawerNavigator />
+            <Drawer.Navigator
+              drawerContent={props => <CustomDrawerComponent {...props} />}
+            >
+              <Drawer.Screen
+                options={{
+                  drawerIcon: () => <Ionicons name="ios-home" size={24} />
+                }}
+                name="HomeDrawer"
+                component={RootStack}
+              />
+              <Drawer.Screen
+                options={{
+                  drawerIcon: () => <Ionicons name="ios-settings" size={24} />
+                }}
+                name="Settings"
+                component={SettingsDrawer}
+              />
+            </Drawer.Navigator>
           </ActionSheetProvider>
         )}
       </NavigationContainer>

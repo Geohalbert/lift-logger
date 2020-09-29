@@ -1,25 +1,20 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-
-import LottieView from "lottie-react-native";
+import { View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import colors from "../assets/colors";
-const SplashScreen = props => (
-  <View style={styles.container}>
-    <LottieView
-      style={{ height: 200, width: 200 }}
-      source={require("../assets/splash.json")}
-      autoPlay
-      loop
-    />
+
+const SplashScreen = () => (
+  <View style={{ flex: 1, backgroundColor: colors.bgMain }}>
+    <View
+      style={{
+        flex: 1,
+        borderColor: "black",
+        alignItems: "center",
+        justifyContent: "center"
+      }}
+    >
+      <Ionicons name="ios-fitness" size={150} color={colors.logoColor} />
+    </View>
   </View>
 );
 export default SplashScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.bgMain
-  }
-});

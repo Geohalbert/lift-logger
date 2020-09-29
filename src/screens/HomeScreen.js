@@ -271,20 +271,11 @@ class HomeScreen extends React.Component {
     );
   };
 
-  viewWorkout = async selectedWorkout => {
-    console.log(`selectedWorkout.key: ${selectedWorkout.key}`);
-    console.log(`selectedWorkout: ${JSON.stringify(selectedWorkout)}`);
+  viewWorkout = selectedWorkout => {
     this.props.navigation.navigate("Workout", {
       currentWorkout: selectedWorkout,
       workoutId: selectedWorkout.key
     });
-
-    // await firebase
-    // .database()
-    // .ref("workouts")
-    // .child(this.state.currentUser.uid)
-    // .child(selectedWorkout.key)
-    // .remove();
   };
 
   renderItem = (item, index) => {
