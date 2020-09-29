@@ -26,8 +26,12 @@
     "android": {
       "package": "com.geohalbert.liftlogger"
     },
-    "entryPoint": "node_modules/expo/AppEntry.js"
-  },
-  "displayName": "Lift Logger",
-  "name": "lift-logger"
+    "entryPoint": "node_modules/expo/AppEntry.js",
+    "sdkVersion": "38.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
+  }
 }
