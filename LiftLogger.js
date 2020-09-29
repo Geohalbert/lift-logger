@@ -37,9 +37,6 @@ class LiftLogger extends Component {
   };
 
   render() {
-    if (this.props.auth.isLoading) {
-      return <SplashScreen />;
-    }
     return (
       <NavigationContainer>
         {!this.props.auth.isSignedIn ? (

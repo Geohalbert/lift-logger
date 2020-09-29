@@ -1,10 +1,12 @@
-import firebase, { db } from "../config/firebase.js";
+import firebase from "../../config/firebase";
 
 // define types
 
 export const UPDATE_EMAIL = "UPDATE_EMAIL";
 export const UPDATE_PASSWORD = "UPDATE_PASSWORD";
+export const SET_USER = "SET_USER";
 export const LOGIN = "LOGIN";
+export const LOGOUT = "LOGOUT";
 export const REGISTER = "REGISTER";
 
 // actions
@@ -22,21 +24,30 @@ export const updatePassword = password => {
     payload: password
   };
 };
-
-export const login = () => {
-  return async (dispatch, getState) => {
-    try {
-      const { email, password } = getState().user;
-      const response = await firebase.auth().signInWithEmailAndPassword(
-        email,
-        password
-      );
-
-      dispatch(getUser(response.user.uid));
-    } catch (e) {
-      console.log(e);
-    }
+export const setUser = userObj => {
+  return {
+    type: SET_USER,
+    payload: userObj
   };
+};
+
+export const logOut = () => {
+  return {
+    type: "LOGOUT"
+  };
+};
+export const login = async (email, password) => {
+  try {
+    const response = await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password);
+    if (response) {
+      setIsLoading(false);
+      setUser(response.user);
+    }
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export const getUser = uid => {
@@ -54,24 +65,17 @@ export const getUser = uid => {
   };
 };
 
-export const register = () => {
-  return async (dispatch, getState) => {
-    try {
-      const { email, password } = getState().user;
-      const response = await firebase.auth().createUserWithEmailAndPassword(
-        email,
-        password
-      );
-      if (response.user.uid) {
-        const user = {
-          uid: response.user.uid,
-          email: email
-        };
-
-        dispatch({ type: REGISTER, payload: user });
-      }
-    } catch (e) {
-      console.log(e);
+export const register = async userObj => {
+  try {
+    const { email, password } = userObj;
+    const response = await firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password);
+    if (response) {
+      setIsLoading(false);
+      setUser(response.user);
     }
-  };
+  } catch (e) {
+    console.log(e);
+  }
 };
