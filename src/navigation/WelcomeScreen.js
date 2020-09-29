@@ -1,48 +1,58 @@
 import React from "react";
-import { View, Text } from "react-native";
-
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../assets/colors";
 import CustomAction from "../components/CustomAction";
-export default class WelcomeScreen extends React.Component {
-  render() {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.bgMain }}>
-        <View
-          style={{
-            flex: 1,
-            borderColor: "black",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <Ionicons name="ios-fitness" size={150} color={colors.logoColor} />
-          <Text style={{ fontSize: 50, fontWeight: "100", color: "white" }}>
-            Lift Logger
-          </Text>
-        </View>
-        <View
-          style={{
-            flex: 1,
+import colors from "../assets/colors";
 
-            alignItems: "center"
-          }}
-        >
-          <CustomAction
-            style={{
-              width: 200,
-              backgroundColor: "transparent",
-              borderWidth: 0.5,
-              borderColor: colors.bgPrimary,
-              marginBottom: 10
-            }}
-            title="Login"
-            onPress={() => this.props.navigation.navigate("LoginScreen")}
-          >
-            <Text style={{ fontWeight: "100", color: "white" }}>Login</Text>
-          </CustomAction>
-        </View>
+export default function WelcomeScreen(props) {
+  return (
+    <View style={styles.container}>
+      <View style={styles.logo}>
+        <Ionicons name="ios-fitness" size={150} color={colors.logoColor} />
+        <Text style={styles.logoText}>Lift Logger</Text>
       </View>
-    );
-  }
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center"
+        }}
+      >
+        <CustomAction
+          style={styles.customAction}
+          title="Login"
+          onPress={() => props.navigation.navigate("LoginScreen")}
+        >
+          <Text style={styles.buttonText}>Login</Text>
+        </CustomAction>
+      </View>
+    </View>
+  );
 }
+const styles = StyleSheet.create({
+  buttonText: {
+    color: "white",
+    fontWeight: "100"
+  },
+  container: {
+    backgroundColor: colors.bgMain,
+    flex: 1
+  },
+  customAction: {
+    backgroundColor: "transparent",
+    borderColor: colors.bgPrimary,
+    borderWidth: 0.5,
+    marginBottom: 10,
+    width: 200
+  },
+  logo: {
+    alignItems: "center",
+    borderColor: "black",
+    flex: 1,
+    justifyContent: "center"
+  },
+  logoText: {
+    color: "white",
+    fontSize: 50,
+    fontWeight: "100"
+  }
+});
