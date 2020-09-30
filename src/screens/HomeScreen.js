@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -20,124 +21,78 @@ import "firebase/storage";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import ListItem from "../components/ListItem";
 import * as Animatable from "react-native-animatable";
-import { connect } from "react-redux";
 import { compose } from "redux";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
 import * as ImageHelpers from "../helpers/ImageHelpers";
+import {
+  loadWorkouts,
+  addWorkout,
+  markWorkoutAsComplete,
+  toggleIsLoadingWorkouts,
+  markWorkoutAsIncomplete,
+  deleteWorkout,
+  updateWorkoutImage
+} from "../redux/actions/workouts";
 
-class HomeScreen extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      isAddNewWorkoutVisible: false,
-      workouts: [],
-      workoutsIncomplete: [],
-      workoutsComplete: [],
-      textInputData: "",
-      currentUser: {}
-    };
-    this.textInputRef = null;
-  }
+export default function HomeScreen() {
+  // class HomeScreen extends React.Component {
+  const workouts = useSelector(state => state.workouts);
+  const currentUser = useSelector(state => state.auth.currentUser);
+  // const { workouts , currentUser } = useSelector(state => ({
+  //   workouts : state.workouts,
+  //   currentUser: state.auth.currentUser,
+  // }));
+  const dispatch = useDispatch();
 
-  loadWorkouts = async () => {
-    const user = this.props.currentUser;
-    const currentUserData = await firebase
-      .database()
-      .ref("users")
-      .child(user.uid)
-      .once("value");
+  // const [workouts, setWorkouts] = useState([]);
+  const [workoutsIncomplete, setWorkoutsIncomplete] = useState([]);
+  const [workoutsComplete, setWorkoutsComplete] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAddNewWorkoutVisible, setIsAddNewWorkoutVisible] = useState(false);
+  const [newWorkoutName, setNewWorkoutName] = useState("");
 
-    const workouts = await firebase
-      .database()
-      .ref("users/" + user.uid)
-      .child("workouts")
-      .once("value");
+  // constructor() {
+  //   super();
+  //   this.state = {
+  //     isAddNewWorkoutVisible: false,
+  //     workouts: [],
+  //     workoutsIncomplete: [],
+  //     workoutsComplete: [],
+  //     textInputData: "",
+  //     currentUser: {}
+  //   };
+  //   this.textInputRef = null;
+  // }
 
-    const workoutsArray = snapshotToArray(workouts);
-
-    this.setState({
-      currentUser: currentUserData.val()
-    });
-
-    this.props.loadWorkouts(workoutsArray.reverse());
-    this.props.toggleIsLoadingWorkouts(false);
-    console.log(this.props.workouts);
+  fetchWorkouts = () => {
+    dispatch(loadWorkouts(currentUser));
+    setIsLoading(false);
+    console.log(`fetchWorkouts!`);
   };
 
-  componentDidMount = () => {
-    this.loadWorkouts();
-  };
-
-  componentDidUpdate() {
-    console.log("update");
-  }
-
-  componentWillUnmount() {
-    console.log("unmount");
-  }
+  useEffect(() => {
+    this.fetchWorkouts();
+  }, [workouts]);
 
   showAddNewWorkout = () => {
-    this.setState({ isAddNewWorkoutVisible: true });
+    setIsAddNewWorkoutVisible(true);
   };
 
   hideAddNewWorkout = () => {
-    this.setState({ isAddNewWorkoutVisible: false });
+    setIsAddNewWorkoutVisible(false);
   };
 
-  addWorkout = async workout => {
-    this.setState({ textInputData: "" });
-    this.textInputRef.setNativeProps({ text: "" });
-
-    try {
-      const snapshot = await firebase
-        .database()
-        .ref("users")
-        .child(this.state.currentUser.uid)
-        .child("workouts")
-        .orderByChild("name")
-        .equalTo(workout)
-        .once("value");
-
-      if (snapshot.exists()) {
-        alert("unable to add as workout already exists");
-      } else {
-        const key = await firebase
-          .database()
-          .ref("workouts")
-          .push().key;
-
-        const stamp = new Date().getTime();
-        const workoutPayload = {
-          uid: this.state.currentUser.uid,
-          name: workout,
-          complete: false,
-          createdAt: stamp,
-          updatedAt: stamp,
-          exercises: {}
-        };
-
-        let updates = {};
-        updates["/workouts/" + key] = workoutPayload;
-        updates[
-          "/users/" + this.state.currentUser.uid + "/workouts/" + key
-        ] = workoutPayload;
-
-        const response = await firebase
-          .database()
-          .ref()
-          .update(updates);
-        this.props.addWorkout({ ...workoutPayload, response: response });
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  createWorkout = workoutName => {
+    setNewWorkoutName("");
+    dispatch(addWorkout(workoutName, currentUser));
+    console.log(`create Workouts!`);
   };
 
   markAsComplete = async selectedWorkout => {
     try {
-      this.props.toggleIsLoadingWorkouts(true);
+      setIsLoading(true);
       const newStamp = new Date().getTime();
       const response = await firebase
         .database()
@@ -157,16 +112,16 @@ class HomeScreen extends React.Component {
       );
 
       this.props.markWorkoutAsComplete(response);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     }
   };
 
   markAsIncomplete = async selectedWorkout => {
     try {
-      this.props.toggleIsLoadingWorkouts(true);
+      setIsLoading(true);
 
       const newStamp = new Date().getTime();
       const response = await firebase
@@ -176,16 +131,16 @@ class HomeScreen extends React.Component {
         .update({ complete: false, updatedAt: newStamp });
 
       this.props.markWorkoutAsIncomplete(response);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     }
   };
 
   deleteWorkout = async (selectedWorkout, index) => {
     try {
-      this.props.toggleIsLoadingWorkouts(true);
+      setIsLoading(true);
 
       const response = await firebase
         .database()
@@ -194,10 +149,10 @@ class HomeScreen extends React.Component {
         .remove();
 
       this.props.deleteWorkout(response);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     }
   };
 
@@ -232,10 +187,10 @@ class HomeScreen extends React.Component {
     const result = await ImageHelpers.openImageLibrary();
 
     if (result) {
-      this.props.toggleIsLoadingWorkouts(true);
+      setIsLoading(true);
       const downloadUrl = await this.uploadImage(result, selectedWorkout);
       this.props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     }
   };
 
@@ -243,10 +198,10 @@ class HomeScreen extends React.Component {
     const result = await ImageHelpers.openCamera();
 
     if (result) {
-      this.props.toggleIsLoadingWorkouts(true);
+      setIsLoading(true);
       const downloadUrl = await this.uploadImage(result, selectedWorkout);
       this.props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
-      this.props.toggleIsLoadingWorkouts(false);
+      setIsLoading(false);
     }
   };
 
@@ -350,39 +305,38 @@ class HomeScreen extends React.Component {
     );
   };
 
-  render() {
-    console.log("render");
-    return (
+  console.log("render");
+  return (
+    <View style={styles.container}>
+      <SafeAreaView />
+
       <View style={styles.container}>
-        <SafeAreaView />
-
-        <View style={styles.container}>
-          {this.props.workouts.isLoadingWorkouts && (
-            <View
-              style={{
-                ...StyleSheet.absoluteFill,
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 1000,
-                elevation: 1000
-              }}
-            >
-              <ActivityIndicator size="large" color={colors.logoColor} />
-            </View>
-          )}
-          <View style={styles.textInputContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter new workout name"
-              placeholderTextColor={colors.txtPlaceholder}
-              onChangeText={text => this.setState({ textInputData: text })}
-              ref={component => {
-                this.textInputRef = component;
-              }}
-            />
+        {this.props.workouts.isLoadingWorkouts && (
+          <View
+            style={{
+              ...StyleSheet.absoluteFill,
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              elevation: 1000
+            }}
+          >
+            <ActivityIndicator size="large" color={colors.logoColor} />
           </View>
+        )}
+        <View style={styles.textInputContainer}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter new workout name"
+            placeholderTextColor={colors.txtPlaceholder}
+            onChangeText={text => this.setState({ textInputData: text })}
+            ref={component => {
+              this.textInputRef = component;
+            }}
+          />
+        </View>
 
-          {/* {this.state.isAddNewWorkoutVisible && (
+        {/* {this.state.isAddNewWorkoutVisible && (
             <View style={styles.textInputContainer}>
               <TextInput
                 style={styles.textInput}
@@ -403,75 +357,80 @@ class HomeScreen extends React.Component {
             </View>
           )} */}
 
-          <FlatList
-            data={this.props.workouts.workouts}
-            renderItem={({ item }, index) => this.renderItem(item, index)}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={
-              !this.props.workouts.isLoadingWorkouts && (
-                <ListEmptyComponent text="Not Reading Any Workouts." />
-              )
-            }
-          />
-          <Animatable.View
-            animation={
-              this.state.textInputData.length > 0
-                ? "slideInRight"
-                : "slideOutRight"
-            }
+        <FlatList
+          data={this.props.workouts.workouts}
+          renderItem={({ item }, index) => this.renderItem(item, index)}
+          keyExtractor={(item, index) => index.toString()}
+          ListEmptyComponent={
+            !this.props.workouts.isLoadingWorkouts && (
+              <ListEmptyComponent text="Not Reading Any Workouts." />
+            )
+          }
+        />
+        <Animatable.View
+          animation={
+            this.state.textInputData.length > 0
+              ? "slideInRight"
+              : "slideOutRight"
+          }
+        >
+          <CustomAction
+            position="right"
+            style={styles.addNewWorkoutButton}
+            onPress={() => this.addWorkout(this.state.textInputData)}
           >
-            <CustomAction
-              position="right"
-              style={styles.addNewWorkoutButton}
-              onPress={() => this.addWorkout(this.state.textInputData)}
-            >
-              <Text style={styles.addNewWorkoutButtonText}>+</Text>
-            </CustomAction>
-          </Animatable.View>
-        </View>
+            <Text style={styles.addNewWorkoutButtonText}>+</Text>
+          </CustomAction>
+        </Animatable.View>
+      </View>
 
-        {/* <View style={styles.footer}>
+      {/* <View style={styles.footer}>
           <WorkoutCount count={this.state.workouts.length} title="Total Workouts" />
           <WorkoutCount count={this.state.workoutsIncomplete.length} title="Incomplete" />
           <WorkoutCount count={this.state.workoutsComplete.length} title="Complete" />
         </View> */}
-        <SafeAreaView />
-      </View>
-    );
-  }
+      <SafeAreaView />
+    </View>
+  );
 }
 
-const mapStateToProps = state => {
-  return {
-    workouts: state.workouts,
-    currentUser: state.auth.currentUser
-  };
-};
+const workouts = useSelector(state => state.workouts);
+const currentUser = useSelector(state => state.auth.currentUser);
+const dispatch = useDispatch();
 
-const mapDispatchToProps = dispatch => {
-  return {
-    loadWorkouts: workouts =>
-      dispatch({ type: "LOAD_WORKOUTS_FROM_SERVER", payload: workouts }),
-    addWorkout: workout => dispatch({ type: "ADD_WORKOUT", payload: workout }),
-    markWorkoutAsComplete: workout =>
-      dispatch({ type: "MARK_WORKOUT_AS_COMPLETE", payload: workout }),
-    toggleIsLoadingWorkouts: bool =>
-      dispatch({ type: "TOGGLE_IS_LOADING_WORKOUTS", payload: bool }),
-    markWorkoutAsIncomplete: workout =>
-      dispatch({ type: "MARK_WORKOUT_AS_INCOMPLETE", payload: workout }),
-    deleteWorkout: workout =>
-      dispatch({ type: "DELETE_WORKOUT", payload: workout }),
-    updateWorkoutImage: workout =>
-      dispatch({ type: "UPDATE_WORKOUT_IMAGE", payload: workout })
-  };
-};
+{
+  loadWorkouts,
+    addWorkout,
+    markWorkoutAsComplete,
+    toggleIsLoadingWorkouts,
+    markWorkoutAsIncomplete,
+    deleteWorkout,
+    updateWorkoutImage;
+}
+// const mapDispatchToProps = dispatch => {
+//   return {
+//     loadWorkouts: workouts =>
+//       dispatch({ type: "LOAD_WORKOUTS_FROM_SERVER", payload: workouts }),
+//     addWorkout: workout => dispatch({ type: "ADD_WORKOUT", payload: workout }),
+//     markWorkoutAsComplete: workout =>
+//       dispatch({ type: "MARK_WORKOUT_AS_COMPLETE", payload: workout }),
+//     toggleIsLoadingWorkouts: bool =>
+//       dispatch({ type: "TOGGLE_IS_LOADING_WORKOUTS", payload: bool }),
+//     markWorkoutAsIncomplete: workout =>
+//       dispatch({ type: "MARK_WORKOUT_AS_INCOMPLETE", payload: workout }),
+//     deleteWorkout: workout =>
+//       dispatch({ type: "DELETE_WORKOUT", payload: workout }),
+//     updateWorkoutImage: workout =>
+//       dispatch({ type: "UPDATE_WORKOUT_IMAGE", payload: workout })
+//   };
+// };
 
-const wrapper = compose(
-  connect(mapStateToProps, mapDispatchToProps),
-  connectActionSheet
-);
+// const wrapper = compose(
+//   connect(mapStateToProps, mapDispatchToProps),
+//   connectActionSheet
+// );
 
-export default wrapper(HomeScreen);
+// export default wrapper(HomeScreen);
 
 const styles = StyleSheet.create({
   container: {

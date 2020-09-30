@@ -8,8 +8,9 @@ export const UPDATE_NAME = "UPDATE_NAME";
 export const UPDATE_COMPLETE = "UPDATE_COMPLETE";
 export const ADD_WORKOUT = "ADD_WORKOUT";
 export const GET_WORKOUT = "GET_WORKOUT";
+export const LOAD_WORKOUTS_FROM_SERVER = "LOAD_WORKOUTS_FROM_SERVER";
 export const DELETE_WORKOUT = "DELETE_WORKOUT";
-export const UPDATE_WORKOUT = "UPDATEE_WORKOUT";
+export const UPDATE_WORKOUT = "UPDATE_WORKOUT";
 
 export const updateName = name => {
   return {
@@ -25,52 +26,78 @@ export const updateComplete = complete => {
   };
 };
 
-export const getWorkout = wid => {
-  return async (dispatch, getState) => {
-    try {
-      const workout = await db
-        .collection("workouts")
-        .doc(wid)
-        .get();
+export const getWorkout = async wid => {
+  try {
+    const workout = await db
+      .collection("workouts")
+      .doc(wid)
+      .get();
 
-      dispatch({ type: LOGIN, payload: user.data() });
-    } catch (e) {
-      console.log(e);
-    }
+    return { type: GET_WORKOUT, payload: workout };
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const loadWorkouts = async user => {
+  const workouts = await firebase
+    .database()
+    .ref("users/" + user.uid)
+    .child("workouts")
+    .once("value");
+
+  const workoutsArray = snapshotToArray(workouts);
+  return {
+    type: LOAD_WORKOUTS_FROM_SERVER,
+    payload: workoutsArray.reverse()
   };
 };
 
-export const addWorkout = async workout => {
-  return async (dispatch, getState) => {
-    try {
-      const snapshot = await firebase
+export const addWorkout = async (workoutName, currentUser) => {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref("workouts")
+      .child(getcurrentUser.uid)
+      .orderByChild("name")
+      .equalTo(workout)
+      .once("value");
+
+    if (snapshot.exists()) {
+      alert("unable to add as workout already exists");
+    } else {
+      const key = await firebase
         .database()
         .ref("workouts")
-        .child(getcurrentUser.uid)
-        .orderByChild("name")
-        .equalTo(workout)
-        .once("value");
+        .child(currentUser.uid)
+        .push().key;
 
-      if (snapshot.exists()) {
-        alert("unable to add as workout already exists");
-      } else {
-        const key = await firebase
-          .database()
-          .ref("workouts")
-          .child(this.state.currentUser.uid)
-          .push().key;
+      const stamp = new Date().getTime();
+      const workoutPayload = {
+        uid: currentUser.uid,
+        name: workoutName,
+        complete: false,
+        createdAt: stamp,
+        updatedAt: stamp,
+        exercises: {}
+      };
+      let updates = {};
+      updates["/workouts/" + key] = workoutPayload;
+      updates[
+        "/users/" + currentUser.uid + "/workouts/" + key
+      ] = workoutPayload;
 
-        const stamp = new Date().getTime();
-        const response = await firebase
-          .database()
-          .ref("workouts")
-          .child(this.state.currentUser.uid)
-          .child(key)
-          .set({ name: workout, complete: false });
-        this.props.addWorkout({ name: workout, complete: false, key: key });
-      }
-    } catch (error) {
-      console.log(error);
+      const response = await firebase
+        .database()
+        .ref()
+        .update(updates);
+
+      return {
+        type: ADD_WORKOUT,
+        response: response
+      };
     }
-  };
+  } catch (error) {
+    console.log(error);
+  }
 };
