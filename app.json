@@ -25,12 +25,6 @@
     },
     "android": {
       "package": "com.geohalbert.liftlogger"
-    },
-    "entryPoint": "node_modules/expo/AppEntry.js",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ]
+    }
   }
 }
