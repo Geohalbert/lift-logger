@@ -7,14 +7,7 @@ import {
   TextInput,
   ActivityIndicator
 } from "react-native";
-import {
-  login,
-  setUser,
-  updateEmail,
-  updatePassword,
-  getUser,
-  register
-} from "../redux/actions/user";
+import { setUser, logOut } from "../redux/actions/user";
 
 import colors from "../assets/colors";
 import CustomAction from "../components/CustomAction";
@@ -23,14 +16,7 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 
-export default function LoginScreen({
-  login,
-  setUser,
-  updateEmail,
-  updatePassword,
-  getUser,
-  register
-}) {
+export default function LoginScreen({ setUser, logOut }) {
   const dispatch = useDispatch();
 
   const [email, onChangeEmail] = useState("");

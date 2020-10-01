@@ -26,92 +26,114 @@ import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
 import * as ImageHelpers from "../helpers/ImageHelpers";
+import { useNavigation } from "@react-navigation/native";
+
+import InputField from "../components/InputField";
 import {
   loadWorkouts,
   addWorkout,
   markWorkoutAsComplete,
-  toggleIsLoadingWorkouts,
   markWorkoutAsIncomplete,
-  deleteWorkout,
+  removeWorkout,
   updateWorkoutImage
 } from "../redux/actions/workouts";
 
 export default function HomeScreen() {
-  // class HomeScreen extends React.Component {
-  const workouts = useSelector(state => state.workouts);
+  const workouts = useSelector(state => state.workouts.workouts);
+  const workoutsIncomplete = useSelector(
+    state => state.workouts.workoutsIncomplete
+  );
+  const workoutsComplete = useSelector(
+    state => state.workouts.workoutsComplete
+  );
   const currentUser = useSelector(state => state.auth.currentUser);
-  // const { workouts , currentUser } = useSelector(state => ({
-  //   workouts : state.workouts,
-  //   currentUser: state.auth.currentUser,
-  // }));
   const dispatch = useDispatch();
+  const navigation = useNavigation();
 
-  // const [workouts, setWorkouts] = useState([]);
-  const [workoutsIncomplete, setWorkoutsIncomplete] = useState([]);
-  const [workoutsComplete, setWorkoutsComplete] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddNewWorkoutVisible, setIsAddNewWorkoutVisible] = useState(false);
   const [newWorkoutName, setNewWorkoutName] = useState("");
+  const [isWorkoutNameInvalid, onChangeWorkoutNameError] = useState(false);
 
-  // constructor() {
-  //   super();
-  //   this.state = {
-  //     isAddNewWorkoutVisible: false,
-  //     workouts: [],
-  //     workoutsIncomplete: [],
-  //     workoutsComplete: [],
-  //     textInputData: "",
-  //     currentUser: {}
-  //   };
-  //   this.textInputRef = null;
-  // }
+  fetchWorkouts = async () => {
+    setIsLoading(true);
+    if (currentUser) {
+      let uid = JSON.parse(JSON.stringify(currentUser.uid));
+      const response = await firebase
+        .database()
+        .ref("users/" + uid)
+        .child("workouts")
+        .once("value");
 
-  fetchWorkouts = () => {
-    dispatch(loadWorkouts(currentUser));
-    setIsLoading(false);
-    console.log(`fetchWorkouts!`);
+      let workoutsArray = snapshotToArray(response);
+      dispatch(loadWorkouts(workoutsArray.reverse()));
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    this.fetchWorkouts();
-  }, [workouts]);
+    fetchWorkouts();
+  }, []);
 
-  showAddNewWorkout = () => {
-    setIsAddNewWorkoutVisible(true);
+  const createWorkout = async workoutName => {
+    let uid = JSON.parse(JSON.stringify(currentUser.uid));
+    const stamp = new Date().getTime();
+    const workoutPayload = {
+      uid: uid,
+      name: workoutName,
+      complete: false,
+      createdAt: stamp,
+      updatedAt: stamp,
+      exercises: {}
+    };
+
+    try {
+      const snapshot = await firebase
+        .database()
+        .ref("workouts")
+        .child(uid)
+        .orderByChild("name")
+        .equalTo(workoutName)
+        .once("value");
+
+      if (snapshot.exists()) {
+        alert("unable to add as workout already exists");
+      } else {
+        const key = await firebase
+          .database()
+          .ref("workouts")
+          .child(uid)
+          .push().key;
+
+        let updates = {};
+        updates["/workouts/" + key] = workoutPayload;
+        updates["/users/" + uid + "/workouts/" + key] = workoutPayload;
+
+        const response = firebase
+          .database()
+          .ref()
+          .update(updates);
+        dispatch(addWorkout(response));
+      }
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
   };
 
-  hideAddNewWorkout = () => {
-    setIsAddNewWorkoutVisible(false);
-  };
-
-  createWorkout = workoutName => {
-    setNewWorkoutName("");
-    dispatch(addWorkout(workoutName, currentUser));
-    console.log(`create Workouts!`);
-  };
-
-  markAsComplete = async selectedWorkout => {
+  const markAsComplete = async selectedWorkout => {
     try {
       setIsLoading(true);
       const newStamp = new Date().getTime();
       const response = await firebase
         .database()
-        .ref("users/" + this.state.currentUser.uid + "/workouts")
+        .ref("users/" + currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .update({ complete: true, updatedAt: newStamp });
 
-      let workouts = this.state.workouts.map(workout => {
-        if (workout.name == selectedWorkout.name) {
-          return { ...workout, complete: true };
-        }
-        return workout;
-      });
-
-      let workoutsIncomplete = this.state.workoutsIncomplete.filter(
-        workout => workout.name !== selectedWorkout.name
-      );
-
-      this.props.markWorkoutAsComplete(response);
+      markWorkoutAsComplete(response);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -119,18 +141,18 @@ export default function HomeScreen() {
     }
   };
 
-  markAsIncomplete = async selectedWorkout => {
+  const markAsIncomplete = async selectedWorkout => {
     try {
       setIsLoading(true);
 
       const newStamp = new Date().getTime();
       const response = await firebase
         .database()
-        .ref("users/" + this.state.currentUser.uid + "/workouts")
+        .ref("users/" + currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .update({ complete: false, updatedAt: newStamp });
 
-      this.props.markWorkoutAsIncomplete(response);
+      markWorkoutAsIncomplete(response);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -138,17 +160,17 @@ export default function HomeScreen() {
     }
   };
 
-  deleteWorkout = async (selectedWorkout, index) => {
+  const deleteWorkout = async (selectedWorkout, index) => {
     try {
       setIsLoading(true);
 
       const response = await firebase
         .database()
-        .ref("users/" + this.state.currentUser.uid + "/workouts")
+        .ref("users/" + currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .remove();
 
-      this.props.deleteWorkout(response);
+      removeWorkout(response);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -156,7 +178,7 @@ export default function HomeScreen() {
     }
   };
 
-  uploadImage = async (image, selectedWorkout) => {
+  const uploadImage = async (image, selectedWorkout) => {
     const ref = firebase
       .storage()
       .ref("workouts")
@@ -171,7 +193,7 @@ export default function HomeScreen() {
 
       await firebase
         .database()
-        .ref("users/" + this.state.currentUser.uid + "/workouts")
+        .ref("users/" + currentUser.uid + "/workouts")
         .child(selectedWorkout.key)
         .update({ image: downloadUrl });
 
@@ -183,34 +205,34 @@ export default function HomeScreen() {
     }
   };
 
-  openImageLibrary = async selectedWorkout => {
+  const openImageLibrary = async selectedWorkout => {
     const result = await ImageHelpers.openImageLibrary();
 
     if (result) {
       setIsLoading(true);
-      const downloadUrl = await this.uploadImage(result, selectedWorkout);
-      this.props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
+      const downloadUrl = await uploadImage(result, selectedWorkout);
+      props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
       setIsLoading(false);
     }
   };
 
-  openCamera = async selectedWorkout => {
+  const openCamera = async selectedWorkout => {
     const result = await ImageHelpers.openCamera();
 
     if (result) {
       setIsLoading(true);
-      const downloadUrl = await this.uploadImage(result, selectedWorkout);
-      this.props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
+      const downloadUrl = await uploadImage(result, selectedWorkout);
+      props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
       setIsLoading(false);
     }
   };
 
-  addWorkoutImage = selectedWorkout => {
+  const addWorkoutImage = selectedWorkout => {
     // Same interface as https://faceworkout.github.io/react-native/docs/actionsheetios.html
     const options = ["Select from Photos", "Camera", "Cancel"];
     const cancelButtonIndex = 2;
 
-    this.props.showActionSheetWithOptions(
+    props.showActionSheetWithOptions(
       {
         options,
         cancelButtonIndex
@@ -218,22 +240,32 @@ export default function HomeScreen() {
       buttonIndex => {
         // Do something here depending on the button index selected
         if (buttonIndex == 0) {
-          this.openImageLibrary(selectedWorkout);
+          openImageLibrary(selectedWorkout);
         } else if (buttonIndex == 1) {
-          this.openCamera(selectedWorkout);
+          openCamera(selectedWorkout);
         }
       }
     );
   };
 
-  viewWorkout = selectedWorkout => {
-    this.props.navigation.navigate("Workout", {
+  const onUpdateWorkoutName = text => {
+    setNewWorkoutName(text);
+    text.length > 0
+      ? setIsAddNewWorkoutVisible(true)
+      : setIsAddNewWorkoutVisible(false);
+    if (isWorkoutNameInvalid) {
+      onChangeWorkoutNameError(false);
+    }
+  };
+
+  const viewWorkout = selectedWorkout => {
+    navigation.navigate("Workout", {
       currentWorkout: selectedWorkout,
       workoutId: selectedWorkout.key
     });
   };
 
-  renderItem = (item, index) => {
+  const renderItem = (item, index) => {
     let swipeoutButtons = [
       {
         text: "Delete",
@@ -245,7 +277,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgDelete,
-        onPress: () => this.deleteWorkout(item, index)
+        onPress: () => deleteWorkout(item, index)
       }
     ];
 
@@ -260,7 +292,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgSuccessDark,
-        onPress: () => this.markAsComplete(item, index)
+        onPress: () => markAsComplete(item, index)
       });
     } else {
       swipeoutButtons.unshift({
@@ -273,7 +305,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgIncomplete,
-        onPress: () => this.markAsIncomplete(item, index)
+        onPress: () => markAsIncomplete(item, index)
       });
     }
 
@@ -285,9 +317,9 @@ export default function HomeScreen() {
         right={swipeoutButtons}
       >
         <ListItem
-          navPress={() => this.viewWorkout(item)}
+          navPress={() => viewWorkout(item)}
           editable
-          onPress={() => this.addWorkoutImage(item)}
+          onPress={() => addWorkoutImage(item)}
           editable={true}
           marginVertical={0}
           item={item}
@@ -311,7 +343,7 @@ export default function HomeScreen() {
       <SafeAreaView />
 
       <View style={styles.container}>
-        {this.props.workouts.isLoadingWorkouts && (
+        {isLoading && (
           <View
             style={{
               ...StyleSheet.absoluteFill,
@@ -325,112 +357,43 @@ export default function HomeScreen() {
           </View>
         )}
         <View style={styles.textInputContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter new workout name"
-            placeholderTextColor={colors.txtPlaceholder}
-            onChangeText={text => this.setState({ textInputData: text })}
-            ref={component => {
-              this.textInputRef = component;
-            }}
+          <InputField
+            isBanner
+            onChangeText={text => onUpdateWorkoutName(text)}
+            error={isWorkoutNameInvalid}
+            keyboardType="default"
+            errorMessage={"Please enter a valid name."}
+            value={newWorkoutName}
+            placeholder={"Name your next workout"}
+            placeholderTextColor={colors.bgTextInputDark}
           />
         </View>
-
-        {/* {this.state.isAddNewWorkoutVisible && (
-            <View style={styles.textInputContainer}>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Enter Workout Name"
-                placeholderTextColor="grey"
-                onChangeText={text => this.setState({ textInputdata: text })}
-              />
-              <CustomAction
-                style={styles.checkmarkButton}
-                onPress={() => this.addWorkout(this.state.textInputdata)}
-              >
-                <Ionicons name="ios-checkmark" size={40} color="white" />
-              </CustomAction>
-              <CustomAction onPress={this.hideAddNewWorkout}>
-                <Ionicons name="ios-close" size={40} color="white" />
-              </CustomAction>
-             
-            </View>
-          )} */}
-
         <FlatList
-          data={this.props.workouts.workouts}
-          renderItem={({ item }, index) => this.renderItem(item, index)}
-          keyExtractor={(item, index) => index.toString()}
+          data={workouts}
+          renderItem={({ item }, index) => renderItem(item, index)}
+          keyExtractor={(item, index) => (item ? index.toString() : null)}
           ListEmptyComponent={
-            !this.props.workouts.isLoadingWorkouts && (
+            !isLoading && (
               <ListEmptyComponent text="Not Reading Any Workouts." />
             )
           }
         />
         <Animatable.View
-          animation={
-            this.state.textInputData.length > 0
-              ? "slideInRight"
-              : "slideOutRight"
-          }
+          animation={isAddNewWorkoutVisible ? "slideInRight" : "slideOutRight"}
         >
           <CustomAction
             position="right"
             style={styles.addNewWorkoutButton}
-            onPress={() => this.addWorkout(this.state.textInputData)}
+            onPress={() => createWorkout(newWorkoutName)}
           >
             <Text style={styles.addNewWorkoutButtonText}>+</Text>
           </CustomAction>
         </Animatable.View>
       </View>
-
-      {/* <View style={styles.footer}>
-          <WorkoutCount count={this.state.workouts.length} title="Total Workouts" />
-          <WorkoutCount count={this.state.workoutsIncomplete.length} title="Incomplete" />
-          <WorkoutCount count={this.state.workoutsComplete.length} title="Complete" />
-        </View> */}
       <SafeAreaView />
     </View>
   );
 }
-
-const workouts = useSelector(state => state.workouts);
-const currentUser = useSelector(state => state.auth.currentUser);
-const dispatch = useDispatch();
-
-{
-  loadWorkouts,
-    addWorkout,
-    markWorkoutAsComplete,
-    toggleIsLoadingWorkouts,
-    markWorkoutAsIncomplete,
-    deleteWorkout,
-    updateWorkoutImage;
-}
-// const mapDispatchToProps = dispatch => {
-//   return {
-//     loadWorkouts: workouts =>
-//       dispatch({ type: "LOAD_WORKOUTS_FROM_SERVER", payload: workouts }),
-//     addWorkout: workout => dispatch({ type: "ADD_WORKOUT", payload: workout }),
-//     markWorkoutAsComplete: workout =>
-//       dispatch({ type: "MARK_WORKOUT_AS_COMPLETE", payload: workout }),
-//     toggleIsLoadingWorkouts: bool =>
-//       dispatch({ type: "TOGGLE_IS_LOADING_WORKOUTS", payload: bool }),
-//     markWorkoutAsIncomplete: workout =>
-//       dispatch({ type: "MARK_WORKOUT_AS_INCOMPLETE", payload: workout }),
-//     deleteWorkout: workout =>
-//       dispatch({ type: "DELETE_WORKOUT", payload: workout }),
-//     updateWorkoutImage: workout =>
-//       dispatch({ type: "UPDATE_WORKOUT_IMAGE", payload: workout })
-//   };
-// };
-
-// const wrapper = compose(
-//   connect(mapStateToProps, mapDispatchToProps),
-//   connectActionSheet
-// );
-
-// export default wrapper(HomeScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -494,4 +457,3 @@ const styles = StyleSheet.create({
     borderTopColor: colors.borderColor
   }
 });
-5.4;

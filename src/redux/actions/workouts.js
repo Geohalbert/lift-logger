@@ -11,6 +11,8 @@ export const GET_WORKOUT = "GET_WORKOUT";
 export const LOAD_WORKOUTS_FROM_SERVER = "LOAD_WORKOUTS_FROM_SERVER";
 export const DELETE_WORKOUT = "DELETE_WORKOUT";
 export const UPDATE_WORKOUT = "UPDATE_WORKOUT";
+export const MARK_WORKOUT_AS_COMPLETE = "MARK_WORKOUT_AS_COMPLETE";
+export const MARK_WORKOUT_AS_INCOMPLETE = "MARK_WORKOUT_AS_INCOMPLETE";
 
 export const updateName = name => {
   return {
@@ -26,78 +28,48 @@ export const updateComplete = complete => {
   };
 };
 
-export const getWorkout = async wid => {
-  try {
-    const workout = await db
-      .collection("workouts")
-      .doc(wid)
-      .get();
-
-    return { type: GET_WORKOUT, payload: workout };
-  } catch (e) {
-    console.log(e);
-  }
+export const getWorkout = workoutId => {
+  return { type: GET_WORKOUT, payload: workoutId };
 };
 
-export const loadWorkouts = async user => {
-  const workouts = await firebase
-    .database()
-    .ref("users/" + user.uid)
-    .child("workouts")
-    .once("value");
-
-  const workoutsArray = snapshotToArray(workouts);
+export const loadWorkouts = workouts => {
   return {
     type: LOAD_WORKOUTS_FROM_SERVER,
-    payload: workoutsArray.reverse()
+    payload: workouts
   };
 };
 
-export const addWorkout = async (workoutName, currentUser) => {
-  try {
-    const snapshot = await firebase
-      .database()
-      .ref("workouts")
-      .child(getcurrentUser.uid)
-      .orderByChild("name")
-      .equalTo(workout)
-      .once("value");
+export const addWorkout = workout => {
+  return {
+    type: ADD_WORKOUT,
+    payload: workout
+  };
+};
 
-    if (snapshot.exists()) {
-      alert("unable to add as workout already exists");
-    } else {
-      const key = await firebase
-        .database()
-        .ref("workouts")
-        .child(currentUser.uid)
-        .push().key;
+export const removeWorkout = workoutId => {
+  return {
+    type: DELETE_WORKOUT,
+    payload: workoutId
+  };
+};
 
-      const stamp = new Date().getTime();
-      const workoutPayload = {
-        uid: currentUser.uid,
-        name: workoutName,
-        complete: false,
-        createdAt: stamp,
-        updatedAt: stamp,
-        exercises: {}
-      };
-      let updates = {};
-      updates["/workouts/" + key] = workoutPayload;
-      updates[
-        "/users/" + currentUser.uid + "/workouts/" + key
-      ] = workoutPayload;
+export const updateWorkout = workoutId => {
+  return {
+    type: UPDATE_WORKOUT,
+    payload: workoutId
+  };
+};
 
-      const response = await firebase
-        .database()
-        .ref()
-        .update(updates);
+export const markWorkoutAsComplete = workoutId => {
+  return {
+    type: MARK_WORKOUT_AS_COMPLETE,
+    payload: workoutId
+  };
+};
 
-      return {
-        type: ADD_WORKOUT,
-        response: response
-      };
-    }
-  } catch (error) {
-    console.log(error);
-  }
+export const markWorkoutAsInomplete = workoutId => {
+  return {
+    type: MARK_WORKOUT_AS_INCOMPLETE,
+    payload: workoutId
+  };
 };

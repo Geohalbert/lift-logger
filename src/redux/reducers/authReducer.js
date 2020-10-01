@@ -1,3 +1,5 @@
+import firebase from "../../config/firebase";
+
 const initialState = {
   isLoading: true,
   isSignedIn: false,
@@ -21,6 +23,49 @@ const authReducer = (state = initialState, action) => {
         currentUser: null,
         isLoading: false
       };
+
+    case "LOGIN":
+      try {
+        const response = firebase
+          .auth()
+          .signInWithEmailAndPassword(
+            action.payload.email,
+            action.payload.password
+          );
+        if (response) {
+          return {
+            ...state,
+            isSignedIn: true,
+            currentUser: response,
+            isLoading: false
+          };
+        }
+      } catch (e) {
+        console.log(e);
+        return { ...state };
+      }
+
+    case "REGISTER":
+      try {
+        const response = firebase
+          .auth()
+          .createUserWithEmailAndPassword(
+            action.payload.email,
+            action.payload.password
+          );
+        if (response) {
+          return {
+            ...state,
+            isSignedIn: true,
+            currentUser: response,
+            isLoading: false
+          };
+        }
+      } catch (e) {
+        console.log(e);
+        return { ...state };
+      }
+
     default:
       return state;
   }

@@ -2,11 +2,11 @@ const initialState = {
   workouts: [],
   workoutsIncomplete: [],
   workoutsComplete: [],
-  isLoadingWorkouts: true,
+  isLoadingWorkouts: false,
   image: null
 };
 
-const workouts = (state = initialState, action) => {
+const workoutsReducer = (state = initialState, action) => {
   switch (action.type) {
     case "LOAD_WORKOUTS_FROM_SERVER":
       return {
@@ -21,12 +21,16 @@ const workouts = (state = initialState, action) => {
         workouts: [action.payload, ...state.workouts],
         workoutsIncomplete: [action.payload, ...state.workoutsIncomplete]
       };
-    case "MARK_WORKOUT_AS_READ":
+    case "MARK_WORKOUT_AS_COMPLETE":
       return {
         ...state,
         workouts: state.workouts.map(workout => {
           if (workout.name == action.payload.name) {
-            return { ...workout, complete: true };
+            return {
+              ...workout,
+              complete: true,
+              updatedAt: new Date().getTime()
+            };
           }
           return workout;
         }),
@@ -40,12 +44,16 @@ const workouts = (state = initialState, action) => {
         ...state,
         isLoadingWorkouts: action.payload
       };
-    case "MARK_WORKOUT_AS_UNREAD":
+    case "MARK_WORKOUT_AS_INCOMPLETE":
       return {
         ...state,
         workouts: state.workouts.map(workout => {
           if (workout.name == action.payload.name) {
-            return { ...workout, complete: false };
+            return {
+              ...workout,
+              complete: false,
+              updatedAt: new Date().getTime()
+            };
           }
           return workout;
         }),
@@ -72,19 +80,31 @@ const workouts = (state = initialState, action) => {
         ...state,
         workouts: state.workouts.map(workout => {
           if (workout.name == action.payload.name) {
-            return { ...workout, image: action.payload.uri };
+            return {
+              ...workout,
+              image: action.payload.uri,
+              updatedAt: new Date().getTime()
+            };
           }
           return workout;
         }),
         workoutsIncomplete: state.workoutsIncomplete.map(workout => {
           if (workout.name == action.payload.name) {
-            return { ...workout, image: action.payload.uri };
+            return {
+              ...workout,
+              image: action.payload.uri,
+              updatedAt: new Date().getTime()
+            };
           }
           return workout;
         }),
         workoutsComplete: state.workoutsComplete.map(workout => {
           if (workout.name == action.payload.name) {
-            return { ...workout, image: action.payload.uri };
+            return {
+              ...workout,
+              image: action.payload.uri,
+              updatedAt: new Date().getTime()
+            };
           }
           return workout;
         })
@@ -94,4 +114,4 @@ const workouts = (state = initialState, action) => {
   }
 };
 
-export default workouts;
+export default workoutsReducer;
