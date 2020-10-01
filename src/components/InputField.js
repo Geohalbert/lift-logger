@@ -73,6 +73,7 @@ export default function InputField(props) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     marginBottom: 5,
     width: width * 0.9,
     justifyContent: "center"
@@ -99,8 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10
   },
   isBanner: {
-    marginHorizontal: 0,
-    width: width * 0.9
+    marginHorizontal: 0
   },
   isLogin: {
     marginHorizontal: 5
