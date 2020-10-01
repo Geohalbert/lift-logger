@@ -93,11 +93,6 @@ export function HomeTabNavigator() {
         name="WorkoutsComplete"
         component={WorkoutsCompleteScreen}
       />
-      <Tab.Screen
-        options={{ tabBarLabel: "Exercises" }}
-        name="Workout"
-        component={WorkoutScreen}
-      />
     </Tab.Navigator>
   );
 }
@@ -146,30 +141,6 @@ export function AuthStack() {
   );
 }
 
-// const RootStack = createStackNavigator(
-//   {
-//     Main: {
-//       screen: AppStack
-//       // },
-//       // AddNoteModal: {
-//       //   screen: AddNoteModal
-//       // },
-//       // EditNoteModal: {
-//       //   screen: EditNoteModal
-//       // },
-//       // AddPhotoModal: {
-//       //   screen: AddPhotoModal
-//       // },
-//       // ViewPhotoModal: {
-//       //   screen: ViewPhotoModal
-//     }
-//   },
-//   {
-//     mode: "modal",
-//     headerMode: "none"
-//   }
-// );
-
 export function RootStack() {
   return (
     <Stack.Navigator
@@ -202,7 +173,7 @@ export function AppStack() {
     >
       <Stack.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeTabNavigator}
         options={({ route }) => ({
           title: getHeaderTitle(route),
           headerLeft: () => (
