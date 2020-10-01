@@ -11,6 +11,7 @@ export default function InputField(props) {
     error,
     errorMessage,
     helperText,
+    isBanner,
     isLogin,
     isRequired,
     isShortened,
@@ -38,7 +39,9 @@ export default function InputField(props) {
   if (error) {
     stylesArr.push(styles.error);
   }
-
+  if (isBanner) {
+    stylesArr.push(styles.isBanner);
+  }
   if (isShortened) {
     stylesArr.push(styles.shortened);
   }
@@ -80,7 +83,6 @@ const styles = StyleSheet.create({
   errorMessage: {
     color: colors.bgError
   },
-
   focused: {
     borderColor: colors.bgSuccess
   },
@@ -95,6 +97,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: colors.txtWhite,
     paddingHorizontal: 10
+  },
+  isBanner: {
+    marginHorizontal: 0,
+    width: width * 0.9
   },
   isLogin: {
     marginHorizontal: 5
