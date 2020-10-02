@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { View, Text, StyleSheet } from "react-native";
+import { AsyncStorage, View, Text, StyleSheet } from "react-native";
 
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
@@ -10,10 +10,11 @@ import "firebase/database";
 
 export default function SettingsScreen() {
   const dispatch = useDispatch();
-  signOut = async () => {
+  const signOut = async () => {
     try {
+      await AsyncStorage.clear();
       await firebase.auth().signOut();
-      dispatch({ type: "LOGOUT" });
+      dispatch({ type: "SIGN_OUT" });
     } catch (error) {
       alert("Unable to sign out right now");
     }
@@ -28,8 +29,8 @@ export default function SettingsScreen() {
           borderWidth: 0.5,
           borderColor: colors.bgError
         }}
-        title="Sign Up"
-        onPress={() => this.signOut()}
+        title="Sign Out"
+        onPress={signOut}
       >
         <Text style={{ fontWeight: "100", color: "white" }}>Logout</Text>
       </CustomAction>

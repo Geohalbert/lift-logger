@@ -9,7 +9,8 @@ import {
   TextInput,
   FlatList,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage
 } from "react-native";
 import WorkoutCount from "../components/WorkoutCount";
 import WorkoutScreen from "./WorkoutScreen";
@@ -35,7 +36,7 @@ import {
   markWorkoutAsComplete,
   markWorkoutAsIncomplete,
   removeWorkout,
-  updateWorkoutImage
+  updateWorkout
 } from "../redux/actions/workouts";
 
 export default function HomeScreen() {
@@ -53,12 +54,21 @@ export default function HomeScreen() {
   const uid = JSON.parse(JSON.stringify(currentUser.uid));
   const [isLoading, setIsLoading] = useState(true);
 
-  const [duplicateCheck, setDuplicateCheck] = useState(false);
   const [isAddNewWorkoutVisible, setIsAddNewWorkoutVisible] = useState(false);
   const [newWorkoutName, setNewWorkoutName] = useState("");
   const [isWorkoutNameInvalid, onChangeWorkoutNameError] = useState(false);
 
+  const getToken = async () => {
+    try {
+      let userData = await AsyncStorage.getItem("userData");
+      let data = JSON.parse(userData);
+      console.log(data);
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  };
   fetchWorkouts = async () => {
+    getToken;
     setIsLoading(true);
     if (uid) {
       const response = await firebase
@@ -80,7 +90,7 @@ export default function HomeScreen() {
     fetchWorkouts();
   }, []);
 
-  const brandNew = workoutName => {
+  const newWorkout = workoutName => {
     const stamp = new Date().getTime();
     const workoutPayload = {
       uid: uid,
@@ -131,25 +141,37 @@ export default function HomeScreen() {
             ? alert(
                 "A workout with the same name has already been created today."
               )
-            : brandNew(workoutName);
+            : newWorkout(workoutName);
           return result;
         } else {
-          brandNew(workoutName);
+          newWorkout(workoutName);
         }
       });
   };
 
-  const markAsComplete = async selectedWorkout => {
-    try {
-      setIsLoading(true);
-      const newStamp = new Date().getTime();
-      const response = await firebase
-        .database()
-        .ref("users/" + currentUser.uid + "/workouts")
-        .child(selectedWorkout.key)
-        .update({ complete: true, updatedAt: newStamp });
+  const markAsComplete = selectedWorkout => {
+    setIsLoading(true);
 
-      markWorkoutAsComplete(response);
+    const newStamp = new Date().getTime();
+    // let parsed = JSON.parse(JSON.stringify(selectedWorkout));
+    console.log(
+      `JSON.stringify(selectedWorkout): ${JSON.stringify(selectedWorkout)}`
+    );
+    console.log(`selectedWorkout.key: ${selectedWorkout.key}`);
+    const updates = {
+      complete: true,
+      updatedAt: newStamp
+    };
+    try {
+      const updatedWorkout = Object.assign(selectedWorkout, updates);
+      firebase
+        .database()
+        .ref("users/" + uid + "/workouts")
+        .child(selectedWorkout.key)
+        .update({ complete: true });
+
+      dispatch(markWorkoutAsComplete(updatedWorkout));
+      // dispatch(updateWorkout(updatedWorkout));
       setIsLoading(false);
     } catch (error) {
       console.log(error);

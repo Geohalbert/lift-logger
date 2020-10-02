@@ -4,7 +4,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
+  AsyncStorage,
   ActivityIndicator
 } from "react-native";
 import { setUser, logOut } from "../redux/actions/user";
@@ -62,17 +62,26 @@ export default function LoginScreen({ setUser, logOut }) {
     }
   };
 
+  const storeToken = async user => {
+    try {
+      await AsyncStorage.setItem("userData", JSON.stringify(user));
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  };
+
   onSignIn = async () => {
     if (email && password) {
       setIsLoading(true);
       try {
-        const response = await firebase
+        firebase
           .auth()
-          .signInWithEmailAndPassword(email, password);
-        if (response) {
-          setIsLoading(false);
-          dispatch({ type: "SET_USER", payload: response.user });
-        }
+          .signInWithEmailAndPassword(email, password)
+          .then(response => {
+            setIsLoading(false);
+            storeToken(response.user);
+            dispatch({ type: "SET_USER", payload: response.user });
+          });
       } catch (error) {
         setIsLoading(false);
         switch (error.code) {
@@ -92,13 +101,14 @@ export default function LoginScreen({ setUser, logOut }) {
     if (email && password) {
       setIsLoading(true);
       try {
-        const response = await firebase
+        firebase
           .auth()
-          .createUserWithEmailAndPassword(email, password);
-        if (response) {
-          setIsLoading(false);
-          dispatch({ type: "SET_USER", payload: response.user });
-        }
+          .createUserWithEmailAndPassword(email, password)
+          .then(response => {
+            setIsLoading(false);
+            storeToken(response.user);
+            dispatch({ type: "SET_USER", payload: response.user });
+          });
       } catch (error) {
         setIsLoading(false);
         switch (error.code) {

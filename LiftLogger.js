@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet } from "react-native";
+import { AsyncStorage, StyleSheet } from "react-native";
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import { connect } from "react-redux";
@@ -12,10 +12,8 @@ import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { RootStack, SettingsDrawer } from "./src/navigation/AppNavigator";
 
 import CustomDrawerComponent from "./src/screens/DrawerNavigator/CustomDrawerComponent";
-import SettingsScreen from "./src/screens/SettingsScreen";
 import WelcomeScreen from "./src/navigation/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
-import SplashScreen from "./src/screens/SplashScreen";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -24,7 +22,16 @@ class LiftLogger extends Component {
     this.checkIfLoggedIn();
   }
 
+  getToken = async () => {
+    try {
+      let userData = await AsyncStorage.getItem("userData");
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  };
+
   checkIfLoggedIn = () => {
+    this.getToken();
     let unsubscribe;
     try {
       unsubscribe = firebase.auth().onAuthStateChanged(user => {
@@ -109,7 +116,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    signIn: user => dispatch({ type: "SIGN_IN", payload: user }),
+    signIn: user => dispatch({ type: "SET_USER", payload: user }),
     signOut: () => dispatch({ type: "SIGN_OUT" })
   };
 };
