@@ -50,19 +50,22 @@ export default function HomeScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  const uid = JSON.parse(JSON.stringify(currentUser.uid));
   const [isLoading, setIsLoading] = useState(true);
+
+  const [duplicateCheck, setDuplicateCheck] = useState(false);
   const [isAddNewWorkoutVisible, setIsAddNewWorkoutVisible] = useState(false);
   const [newWorkoutName, setNewWorkoutName] = useState("");
   const [isWorkoutNameInvalid, onChangeWorkoutNameError] = useState(false);
 
   fetchWorkouts = async () => {
     setIsLoading(true);
-    if (currentUser) {
-      let uid = JSON.parse(JSON.stringify(currentUser.uid));
+    if (uid) {
       const response = await firebase
         .database()
         .ref("users/" + uid)
         .child("workouts")
+        .orderByChild("createdAt")
         .once("value");
 
       let workoutsArray = snapshotToArray(response);
@@ -77,50 +80,63 @@ export default function HomeScreen() {
     fetchWorkouts();
   }, []);
 
-  const createWorkout = async workoutName => {
-    let uid = JSON.parse(JSON.stringify(currentUser.uid));
+  const brandNew = workoutName => {
     const stamp = new Date().getTime();
     const workoutPayload = {
       uid: uid,
       name: workoutName,
       complete: false,
       createdAt: stamp,
-      updatedAt: stamp,
-      exercises: {}
+      updatedAt: stamp
     };
 
-    try {
-      const snapshot = await firebase
-        .database()
-        .ref("workouts")
-        .child(uid)
-        .orderByChild("name")
-        .equalTo(workoutName)
-        .once("value");
+    const key = firebase
+      .database()
+      .ref("workouts")
+      .push().key;
 
-      if (snapshot.exists()) {
-        alert("unable to add as workout already exists");
-      } else {
-        const key = await firebase
-          .database()
-          .ref("workouts")
-          .child(uid)
-          .push().key;
+    const updates = {};
+    updates["/workouts/" + key] = workoutPayload;
+    updates["/users/" + uid + "/workouts/" + key] = workoutPayload;
+    firebase
+      .database()
+      .ref()
+      .update(updates);
+    dispatch(addWorkout(workoutPayload));
+  };
 
-        let updates = {};
-        updates["/workouts/" + key] = workoutPayload;
-        updates["/users/" + uid + "/workouts/" + key] = workoutPayload;
-
-        const response = firebase
-          .database()
-          .ref()
-          .update(updates);
-        dispatch(addWorkout(response));
+  const hasDuplicates = array => {
+    const today = new Date().toLocaleDateString("en-US");
+    for (let i = 0; i < array.length; ++i) {
+      let obj = array[i];
+      let dateCreated = new Date(obj.createdAt).toLocaleDateString("en-US");
+      if (dateCreated === today) {
+        return true;
       }
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
     }
+    return false;
+  };
+
+  const createWorkout = workoutName => {
+    return firebase
+      .database()
+      .ref("users/" + uid)
+      .child("workouts")
+      .orderByChild("name")
+      .equalTo(workoutName)
+      .once("value", snapshot => {
+        if (snapshot.exists()) {
+          let workoutsArray = snapshotToArray(snapshot);
+          const result = hasDuplicates(workoutsArray)
+            ? alert(
+                "A workout with the same name has already been created today."
+              )
+            : brandNew(workoutName);
+          return result;
+        } else {
+          brandNew(workoutName);
+        }
+      });
   };
 
   const markAsComplete = async selectedWorkout => {
@@ -160,7 +176,7 @@ export default function HomeScreen() {
     }
   };
 
-  const deleteWorkout = async (selectedWorkout, index) => {
+  const deleteWorkout = async selectedWorkout => {
     try {
       setIsLoading(true);
 
@@ -265,7 +281,9 @@ export default function HomeScreen() {
     });
   };
 
-  const renderItem = (item, index) => {
+  const renderItem = ({ item }) => {
+    const key = JSON.stringify(item.key);
+    console.log(`key: ${key}`);
     let swipeoutButtons = [
       {
         text: "Delete",
@@ -277,7 +295,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgDelete,
-        onPress: () => deleteWorkout(item, index)
+        onPress: () => deleteWorkout(item)
       }
     ];
 
@@ -292,7 +310,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgSuccessDark,
-        onPress: () => markAsComplete(item, index)
+        onPress: () => markAsComplete(item)
       });
     } else {
       swipeoutButtons.unshift({
@@ -305,7 +323,7 @@ export default function HomeScreen() {
           </View>
         ),
         backgroundColor: colors.bgIncomplete,
-        onPress: () => markAsIncomplete(item, index)
+        onPress: () => markAsIncomplete(item)
       });
     }
 
@@ -370,8 +388,8 @@ export default function HomeScreen() {
         </View>
         <FlatList
           data={workouts}
-          renderItem={({ item }, index) => renderItem(item, index)}
-          keyExtractor={(item, index) => (item ? index.toString() : null)}
+          renderItem={renderItem}
+          keyExtractor={item => item.key}
           ListEmptyComponent={
             !isLoading && (
               <ListEmptyComponent text="Not Reading Any Workouts." />
