@@ -13,8 +13,8 @@ export default function SettingsScreen() {
   const signOut = async () => {
     try {
       await AsyncStorage.clear();
-      await firebase.auth().signOut();
-      dispatch({ type: "SIGN_OUT" });
+      await dispatch({ type: "SIGN_OUT" });
+      firebase.auth().signOut();
     } catch (error) {
       alert("Unable to sign out right now");
     }

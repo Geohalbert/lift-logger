@@ -46,17 +46,17 @@ export const addWorkout = workout => {
   };
 };
 
-export const removeWorkout = workoutId => {
+export const removeWorkout = workout => {
   return {
     type: DELETE_WORKOUT,
-    payload: workoutId
+    payload: workout
   };
 };
 
-export const updateWorkout = workoutId => {
+export const updateWorkout = workout => {
   return {
     type: UPDATE_WORKOUT,
-    payload: workoutId
+    payload: workout
   };
 };
 

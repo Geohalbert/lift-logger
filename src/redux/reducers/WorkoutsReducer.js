@@ -21,11 +21,32 @@ const workoutsReducer = (state = initialState, action) => {
         workouts: [action.payload, ...state.workouts],
         workoutsIncomplete: [action.payload, ...state.workoutsIncomplete]
       };
+    case "UPDATE_WORKOUT":
+      let updatedWorkout = action.payload;
+
+      //clone the current state
+      let clone = state.workouts;
+      console.log(`clone: ${clone}`);
+      console.log(`updatedWorkout: ${updatedWorkout}`);
+      console.log(
+        `JSON.stringify(updatedWorkout): ${JSON.stringify(updatedWorkout)}`
+      );
+      console.log(`index: ${index}`);
+      //console.log(`: ${}`)
+      //check if bookmark already exist
+      const index = clone.findIndex(obj => obj.key === updatedWorkout.key);
+
+      //if the quote is in the array, update the quote
+      if (index !== -1) clone[index] = action.payload;
+      return {
+        ...state,
+        workouts: clone
+      };
     case "MARK_WORKOUT_AS_COMPLETE":
       return {
         ...state,
         workouts: state.workouts.map(workout => {
-          if (workout.name == action.payload.name) {
+          if (workout.key == action.payload.key) {
             return {
               ...workout,
               complete: true,
@@ -48,7 +69,7 @@ const workoutsReducer = (state = initialState, action) => {
       return {
         ...state,
         workouts: state.workouts.map(workout => {
-          if (workout.name == action.payload.name) {
+          if (workout.key == action.payload.key) {
             return {
               ...workout,
               complete: false,

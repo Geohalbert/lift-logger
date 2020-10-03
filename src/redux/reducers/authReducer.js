@@ -1,5 +1,3 @@
-import firebase from "../../config/firebase";
-
 const initialState = {
   isLoading: true,
   isSignedIn: false,

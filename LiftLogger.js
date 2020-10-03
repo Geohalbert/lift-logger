@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AsyncStorage, StyleSheet } from "react-native";
+import { AsyncStorage } from "react-native";
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import { connect } from "react-redux";
@@ -22,19 +22,19 @@ class LiftLogger extends Component {
     this.checkIfLoggedIn();
   }
 
-  getToken = async () => {
-    try {
-      let userData = await AsyncStorage.getItem("userData");
-    } catch (error) {
-      console.log("Something went wrong", error);
-    }
-  };
+  // getToken = async () => {
+  //   try {
+  //     let userData = await AsyncStorage.getItem("userData");
+  //   } catch (error) {
+  //     console.log("Something went wrong", error);
+  //   }
+  // };
 
-  checkIfLoggedIn = () => {
-    this.getToken();
+  checkIfLoggedIn = async () => {
+    // this.getToken();
     let unsubscribe;
     try {
-      unsubscribe = firebase.auth().onAuthStateChanged(user => {
+      unsubscribe = await firebase.auth().onIdTokenChanged(user => {
         user ? this.props.signIn(user) : this.props.signOut();
         unsubscribe();
       });
@@ -122,11 +122,3 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LiftLogger);
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  }
-});

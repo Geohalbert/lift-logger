@@ -7,7 +7,8 @@ import {
   AsyncStorage,
   ActivityIndicator
 } from "react-native";
-import { setUser, logOut } from "../redux/actions/user";
+import { signIn, signUp } from "../services/UserService";
+import { setUser } from "../redux/actions/user";
 
 import colors from "../assets/colors";
 import CustomAction from "../components/CustomAction";
@@ -16,7 +17,7 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 
-export default function LoginScreen({ setUser, logOut }) {
+export default function LoginScreen() {
   const dispatch = useDispatch();
 
   const [email, onChangeEmail] = useState("");
@@ -62,75 +63,14 @@ export default function LoginScreen({ setUser, logOut }) {
     }
   };
 
-  const storeToken = async user => {
-    try {
-      await AsyncStorage.setItem("userData", JSON.stringify(user));
-    } catch (error) {
-      console.log("Something went wrong", error);
-    }
+  const login = async (email, password) => {
+    const { user } = await signIn(email, password);
+    dispatch(setUser(user));
   };
 
-  onSignIn = async () => {
-    if (email && password) {
-      setIsLoading(true);
-      try {
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password)
-          .then(response => {
-            setIsLoading(false);
-            storeToken(response.user);
-            dispatch({ type: "SET_USER", payload: response.user });
-          });
-      } catch (error) {
-        setIsLoading(false);
-        switch (error.code) {
-          case "auth/user-not-found":
-            alert("A user with that email does not exist. Try signing Up");
-            break;
-          case "auth/invalid-password":
-            alert("Please enter at least six characters");
-            break;
-          case "auth/invalid-email":
-            alert("Please enter an email address");
-        }
-      }
-    }
-  };
-  onSignUp = async () => {
-    if (email && password) {
-      setIsLoading(true);
-      try {
-        firebase
-          .auth()
-          .createUserWithEmailAndPassword(email, password)
-          .then(response => {
-            setIsLoading(false);
-            storeToken(response.user);
-            dispatch({ type: "SET_USER", payload: response.user });
-          });
-      } catch (error) {
-        setIsLoading(false);
-        switch (error.code) {
-          case "auth/user-not-found":
-            alert("A user with that email does not exist. Try signing Up");
-            break;
-          case "auth/invalid-password":
-            alert("Please enter at least six characters");
-            break;
-          case "auth/email-already-in-use":
-            alert("User already exists, try logging in");
-            break;
-          case "auth/invalid-email":
-            alert("Please enter an email address");
-            break;
-          default:
-            alert("Please enter a valid email and password");
-        }
-      }
-    } else {
-      alert("Please enter email and password");
-    }
+  const register = async (email, password) => {
+    const { user } = await signUp(email, password);
+    dispatch(setUser(user));
   };
 
   return (
@@ -176,16 +116,16 @@ export default function LoginScreen({ setUser, logOut }) {
         />
         <View style={{ alignItems: "center" }}>
           <CustomAction
-            onPress={() => onSignIn()}
+            onPress={() => login(email, password)}
             style={[styles.loginButtons, { borderColor: colors.bgPrimary }]}
           >
             <Text style={{ color: "white" }}>Login</Text>
           </CustomAction>
           <CustomAction
-            onPress={() => onSignUp()}
+            onPress={() => register(email, password)}
             style={[styles.loginButtons, { borderColor: colors.bgError }]}
           >
-            <Text style={{ color: "white" }}>Sign Up</Text>
+            <Text style={{ color: "white" }}>Register</Text>
           </CustomAction>
         </View>
       </View>
