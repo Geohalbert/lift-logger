@@ -63,7 +63,7 @@ export const markWorkoutAsComplete = workoutId => {
   };
 };
 
-export const markWorkoutAsInomplete = workoutId => {
+export const markWorkoutAsIncomplete = workoutId => {
   return {
     type: MARK_WORKOUT_AS_INCOMPLETE,
     payload: workoutId
