@@ -112,6 +112,7 @@ export default function HomeScreen() {
       .database()
       .ref()
       .update(updates);
+    setNewWorkoutName("");
     dispatch(addWorkout(workoutPayload));
   };
 
@@ -348,30 +349,32 @@ export default function HomeScreen() {
     }
 
     return (
-      <Swipeout
-        autoClose={true}
-        style={{ marginHorizontal: 5, marginVertical: 5 }}
-        backgroundColor={colors.bgMain}
-        right={swipeoutButtons}
-      >
-        <ListItem
-          navPress={() => viewWorkout(item)}
-          editable
-          onPress={() => addWorkoutImage(item)}
-          editable={true}
-          marginVertical={0}
-          item={item}
+      <View key={"workout-" + item.key}>
+        <Swipeout
+          autoClose={true}
+          style={{ marginHorizontal: 5, marginVertical: 5 }}
+          backgroundColor={colors.bgMain}
+          right={swipeoutButtons}
         >
-          {item.complete && (
-            <Ionicons
-              style={{ marginRight: 5 }}
-              name="ios-checkmark"
-              color={colors.logoColor}
-              size={30}
-            />
-          )}
-        </ListItem>
-      </Swipeout>
+          <ListItem
+            navPress={() => viewWorkout(item)}
+            editable
+            onPress={() => addWorkoutImage(item)}
+            editable={true}
+            marginVertical={0}
+            item={item}
+          >
+            {item.complete && (
+              <Ionicons
+                style={{ marginRight: 5 }}
+                name="ios-checkmark"
+                color={colors.logoColor}
+                size={30}
+              />
+            )}
+          </ListItem>
+        </Swipeout>
+      </View>
     );
   };
 
