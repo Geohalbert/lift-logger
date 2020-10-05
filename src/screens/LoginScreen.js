@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  View,
-  Text,
-  StyleSheet,
-  AsyncStorage,
-  ActivityIndicator
-} from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { signIn, signUp } from "../services/UserService";
 import { setUser } from "../redux/actions/user";
 
 import colors from "../assets/colors";
 import CustomAction from "../components/CustomAction";
 import InputField from "../components/InputField";
-import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 
@@ -64,11 +57,18 @@ export default function LoginScreen() {
   };
 
   const login = async (email, password) => {
+    setIsLoading(true);
     const { user } = await signIn(email, password);
-    dispatch(setUser(user));
+    if (user) {
+      setIsLoading(false);
+      dispatch(setUser(user));
+    } else {
+      setIsLoading(false);
+    }
   };
 
   const register = async (email, password) => {
+    setIsLoading(true);
     const { user } = await signUp(email, password);
     dispatch(setUser(user));
   };
