@@ -26,14 +26,6 @@ const workoutsReducer = (state = initialState, action) => {
 
       //clone the current state
       let clone = state.workouts;
-      console.log(`clone: ${clone}`);
-      console.log(`updatedWorkout: ${updatedWorkout}`);
-      console.log(
-        `JSON.stringify(updatedWorkout): ${JSON.stringify(updatedWorkout)}`
-      );
-      console.log(`index: ${index}`);
-      //console.log(`: ${}`)
-      //check if bookmark already exist
       const index = clone.findIndex(obj => obj.key === updatedWorkout.key);
 
       //if the quote is in the array, update the quote
@@ -57,7 +49,7 @@ const workoutsReducer = (state = initialState, action) => {
         }),
         workoutsComplete: [...state.workoutsComplete, action.payload],
         workoutsIncomplete: state.workoutsIncomplete.filter(
-          workout => workout.name !== action.payload.name
+          workout => workout.key !== action.payload.key
         )
       };
     case "TOGGLE_IS_LOADING_WORKOUTS":
@@ -79,7 +71,7 @@ const workoutsReducer = (state = initialState, action) => {
           return workout;
         }),
         workoutsComplete: state.workoutsComplete.filter(
-          workout => workout.name !== action.payload.name
+          workout => workout.key !== action.payload.key
         ),
         workoutsIncomplete: [...state.workoutsIncomplete, action.payload]
       };
