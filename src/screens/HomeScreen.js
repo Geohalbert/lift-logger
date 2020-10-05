@@ -153,11 +153,6 @@ export default function HomeScreen() {
     setIsLoading(true);
 
     const newStamp = new Date().getTime();
-    // let parsed = JSON.parse(JSON.stringify(selectedWorkout));
-    console.log(
-      `JSON.stringify(selectedWorkout): ${JSON.stringify(selectedWorkout)}`
-    );
-    console.log(`selectedWorkout.key: ${selectedWorkout.key}`);
     const updates = {
       complete: true,
       updatedAt: newStamp
@@ -171,7 +166,6 @@ export default function HomeScreen() {
         .update({ complete: true });
 
       dispatch(markWorkoutAsComplete(updatedWorkout));
-      // dispatch(updateWorkout(updatedWorkout));
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -179,18 +173,23 @@ export default function HomeScreen() {
     }
   };
 
-  const markAsIncomplete = async selectedWorkout => {
+  const markAsIncomplete = selectedWorkout => {
+    setIsLoading(true);
+
+    const newStamp = new Date().getTime();
+    const updates = {
+      complete: false,
+      updatedAt: newStamp
+    };
     try {
-      setIsLoading(true);
-
-      const newStamp = new Date().getTime();
-      const response = await firebase
+      const updatedWorkout = Object.assign(selectedWorkout, updates);
+      firebase
         .database()
-        .ref("users/" + currentUser.uid + "/workouts")
+        .ref("users/" + uid + "/workouts")
         .child(selectedWorkout.key)
-        .update({ complete: false, updatedAt: newStamp });
+        .update({ complete: false });
 
-      markWorkoutAsIncomplete(response);
+      dispatch(markWorkoutAsIncomplete(updatedWorkout));
       setIsLoading(false);
     } catch (error) {
       console.log(error);
