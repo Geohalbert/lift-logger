@@ -197,17 +197,16 @@ export default function HomeScreen() {
     }
   };
 
-  const deleteWorkout = async selectedWorkout => {
+  const deleteWorkout = selectedWorkout => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      const response = await firebase
+      firebase
         .database()
-        .ref("users/" + currentUser.uid + "/workouts")
+        .ref("users/" + uid + "/workouts")
         .child(selectedWorkout.key)
         .remove();
 
-      removeWorkout(response);
+      dispatch(removeWorkout(selectedWorkout));
       setIsLoading(false);
     } catch (error) {
       console.log(error);

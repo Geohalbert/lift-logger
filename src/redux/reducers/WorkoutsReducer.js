@@ -26,9 +26,9 @@ const workoutsReducer = (state = initialState, action) => {
 
       //clone the current state
       let clone = state.workouts;
-      const index = clone.findIndex(obj => obj.key === updatedWorkout.key);
+      let index = clone.findIndex(obj => obj.key === updatedWorkout.key);
 
-      //if the quote is in the array, update the quote
+      //if the workout is in the array, update the workout
       if (index !== -1) clone[index] = action.payload;
       return {
         ...state,
@@ -76,16 +76,22 @@ const workoutsReducer = (state = initialState, action) => {
         workoutsIncomplete: [...state.workoutsIncomplete, action.payload]
       };
     case "DELETE_WORKOUT":
+      let allWorkouts = JSON.parse(JSON.stringify(state.workouts));
+
+      //check if workout exists
+      let ind = allWorkouts.findIndex(obj => obj.key === action.payload.key);
+
+      //if the workout is in the array, remove the qworkout
+      if (ind !== -1) allWorkouts.splice(ind, 1);
+
       return {
         ...state,
-        workouts: state.workouts.filter(
-          workout => workout.name !== action.payload.name
-        ),
+        workouts: allWorkouts,
         workoutsComplete: state.workoutsComplete.filter(
-          workout => workout.name !== action.payload.name
+          workout => workout.key !== action.payload.key
         ),
         workoutsIncomplete: state.workoutsIncomplete.filter(
-          workout => workout.name !== action.payload.name
+          workout => workout.key !== action.payload.key
         )
       };
     case "UPDATE_WORKOUT_IMAGE":
