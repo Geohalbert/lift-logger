@@ -1,16 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 import {
+  ActivityIndicator,
+  AsyncStorage,
+  FlatList,
+  SafeAreaView,
   StyleSheet,
   Text,
-  View,
-  SafeAreaView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Image,
-  ActivityIndicator
+  View
 } from "react-native";
-// import ExerciseCount from "../components/ExerciseCount";
 import { Ionicons } from "@expo/vector-icons";
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
@@ -19,284 +18,356 @@ import "firebase/storage";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import ListItem from "../components/ListItem";
 import * as Animatable from "react-native-animatable";
-import { connect } from "react-redux";
-import { compose } from "redux";
-import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
-import * as ImageHelpers from "../helpers/ImageHelpers";
 
-class WorkoutScreen extends React.Component {
-  // constructor() {
-  //   super();
-  //   this.state = {
-  //     isAddNewExerciseVisible: false,
-  //     exercises: [],
-  //     textInputData: "",
-  //     currentWorkout: {}
-  //   };
-  //   console.log("constructor");
-  //   this.textInputRef = null;
-  // }
+import InputField from "../components/InputField";
+import {
+  addExercise,
+  loadExercises,
+  markExerciseAsComplete,
+  markExerciseAsIncomplete,
+  removeExercise
+} from "../redux/actions/exercises";
 
-  // componentDidMount = async () => {
-  //   const user = this.props.currentUser;
-  //   const currentUserData = await firebase
-  //     .database()
-  //     .ref("users")
-  //     .child(user.uid)
-  //     .once("value");
+export default function WorkoutScreen({ route }) {
+  const { currentWorkout, workoutId } = route.params;
+  const exercises = useSelector(state => state.exercises.exercises);
+  const exercisesIncomplete = useSelector(
+    state => state.exercises.exercisesIncomplete
+  );
+  const exercisesComplete = useSelector(
+    state => state.exercises.exercisesComplete
+  );
+  const currentUser = useSelector(state => state.auth.currentUser);
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
-  //   const workout = this.props.currentWorkout;
-  //   const currentWorkoutData = await firebase
-  //     .database()
-  //     .ref("exercises")
-  //     .child(workout.key)
-  //     .once("value");
+  const uid = JSON.parse(JSON.stringify(currentUser.uid));
+  const [isLoading, setIsLoading] = useState(true);
 
-  //   const exercises = await firebase
-  //     .database()
-  //     .ref("exercises")
-  //     .child(workout.key)
-  //     .once("value");
+  const [isAddNewExerciseVisible, setIsAddNewExerciseVisible] = useState(false);
+  const [newExerciseName, setNewExerciseName] = useState("");
+  const [isExerciseNameInvalid, onChangeExerciseNameError] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
 
-  //   const exercisesArray = snapshotToArray(exercises);
+  const getToken = async () => {
+    try {
+      let userData = await AsyncStorage.getItem("userData");
+      let data = JSON.parse(userData);
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  };
 
-  //   this.setState({
-  //     currentUser: currentUserData.val(),
-  //     currentWorkout: currentWorkoutData.val()
-  //   });
+  const fetchExercises = async () => {
+    getToken;
+    setIsLoading(true);
+    if (workoutId) {
+      console.log(`fetchExercises has workoutId`);
+      const response = await firebase
+        .database()
+        .ref("workouts/" + workoutId)
+        .child("exercises")
+        .orderByChild("createdAt")
+        .once("value");
 
-  //   this.props.loadExercises(exercisesArray.reverse());
-  //   this.props.toggleIsLoadingExercises(false);
-  //   console.log(this.props.exercises);
-  // };
+      let exercisesArray = snapshotToArray(response);
+      dispatch(loadExercises(exercisesArray.reverse()));
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+    }
+  };
 
-  // componentDidUpdate() {
-  //   console.log("update");
-  // }
+  useEffect(() => {
+    fetchExercises();
+  }, []);
 
-  // componentWillUnmount() {
-  //   console.log("unmount");
-  // }
+  const newExercise = exerciseName => {
+    const stamp = new Date().getTime();
+    const exercisePayload = {
+      workoutId: workoutId,
+      name: exerciseName,
+      complete: false,
+      createdAt: stamp,
+      updatedAt: stamp
+    };
 
-  // showAddNewExercise = () => {
-  //   this.setState({ isAddNewExerciseVisible: true });
-  // };
+    const key = firebase
+      .database()
+      .ref("exercises")
+      .push().key;
 
-  // hideAddNewExercise = () => {
-  //   this.setState({ isAddNewExerciseVisible: false });
-  // };
+    const updates = {};
+    updates["/exercises/" + key] = exercisePayload;
+    updates["/workouts/" + workoutId + "/exercises/" + key] = exercisePayload;
+    firebase
+      .database()
+      .ref()
+      .update(updates);
+    setNewExerciseName("");
+    dispatch(addExercise(exercisePayload));
+  };
 
-  // addExercise = async exercise => {
-  //   this.setState({ textInputData: "" });
-  //   this.textInputRef.setNativeProps({ text: "" });
+  const hasDuplicates = array => {
+    const today = new Date().toLocaleDateString("en-US");
+    for (let i = 0; i < array.length; ++i) {
+      let obj = array[i];
+      let dateCreated = new Date(obj.createdAt).toLocaleDateString("en-US");
+      if (dateCreated === today) {
+        return true;
+      }
+    }
+    return false;
+  };
 
-  //   try {
-  //     const snapshot = await firebase
-  //       .database()
-  //       .ref("exercises")
-  //       .child(this.state.currentWorkout.id)
-  //       .orderByChild("name")
-  //       .equalTo(exercise)
-  //       .once("value");
+  const createExercise = exerciseName => {
+    return firebase
+      .database()
+      .ref("workouts/" + workoutId)
+      .child("exercises")
+      .orderByChild("name")
+      .equalTo(exerciseName)
+      .once("value", snapshot => {
+        if (snapshot.exists()) {
+          let exercisesArray = snapshotToArray(snapshot);
+          const result = hasDuplicates(exercisesArray)
+            ? alert(
+                "A exercise with the same name has already been created today."
+              )
+            : newExercise(exerciseName);
+          return result;
+        } else {
+          newExercise(exerciseName);
+        }
+      });
+  };
 
-  //     if (snapshot.exists()) {
-  //       alert("unable to add as exercise already exists");
-  //     } else {
-  //       const key = await firebase
-  //         .database()
-  //         .ref("exercises")
-  //         .child(this.state.currentUser.uid)
-  //         .push().key;
+  const markAsComplete = selectedExercise => {
+    setIsLoading(true);
 
-  //       const stamp = new Date().getTime();
-  //       const exercisePayload = {
-  //         name: exercise,
-  //         createdAt: stamp,
-  //         updatedAt: stamp,
-  //         sets: []
-  //       };
-  //       const response = await firebase
-  //         .database()
-  //         .ref("exercises")
-  //         .child(this.state.currentUser.uid)
-  //         .child(key)
-  //         .set(exercisePayload);
-  //       this.props.addExercise({ ...exercisePayload, key: key });
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+    const newStamp = new Date().getTime();
+    const updates = {
+      complete: true,
+      updatedAt: newStamp
+    };
+    try {
+      const updatedExercise = Object.assign(selectedExercise, updates);
+      firebase
+        .database()
+        .ref("workouts/" + workoutId + "/exercises")
+        .child(selectedExercise.key)
+        .update(updates);
 
-  // deleteExercise = async (selectedExercise, index) => {
-  //   try {
-  //     this.props.toggleIsLoadingExercises(true);
+      dispatch(markExerciseAsComplete(updatedExercise));
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
 
-  //     await firebase
-  //       .database()
-  //       .ref("exercises")
-  //       .child(this.state.currentUser.uid)
-  //       .child(selectedExercise.key)
-  //       .remove();
+  const markAsIncomplete = selectedExercise => {
+    setIsLoading(true);
 
-  //     this.props.deleteExercise(selectedExercise);
-  //     this.props.toggleIsLoadingExercises(false);
-  //   } catch (error) {
-  //     console.log(error);
-  //     this.props.toggleIsLoadingExercises(false);
-  //   }
-  // };
+    const newStamp = new Date().getTime();
+    const updates = {
+      complete: false,
+      updatedAt: newStamp
+    };
+    try {
+      const updatedExercise = Object.assign(selectedExercise, updates);
+      firebase
+        .database()
+        .ref("workouts/" + workoutId + "/exercises")
+        .child(selectedExercise.key)
+        .update(updates);
 
-  // uploadImage = async (image, selectedExercise) => {
-  //   const ref = firebase
-  //     .storage()
-  //     .ref("exercises")
-  //     .child(this.state.currentUser.uid)
-  //     .child(selectedExercise.key);
+      dispatch(markExerciseAsIncomplete(updatedExercise));
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
 
-  //   try {
-  //     //converting to blob
-  //     const blob = await ImageHelpers.prepareBlob(image.uri);
-  //     const snapshot = await ref.put(blob);
+  const deleteExercise = selectedExercise => {
+    setIsLoading(true);
+    try {
+      firebase
+        .database()
+        .ref("workouts/" + workoutId + "/exercises")
+        .child(selectedExercise.key)
+        .remove();
 
-  //     let downloadUrl = await ref.getDownloadURL();
+      dispatch(removeExercise(selectedExercise));
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
 
-  //     await firebase
-  //       .database()
-  //       .ref("exercises")
-  //       .child(this.state.currentUser.uid)
-  //       .child(selectedExercise.key)
-  //       .update({ image: downloadUrl });
+  const addExerciseImage = selectedExercise => {
+    navigation.navigate("Camera", {
+      uid: uid,
+      selectedExercise: selectedExercise,
+      setIsFocused: setIsFocused,
+      uri: selectedExercise.image || null
+    });
+    setIsFocused(false);
+  };
 
-  //     blob.close();
+  const onUpdateExerciseName = text => {
+    setNewExerciseName(text);
+    text.length > 0
+      ? setIsAddNewExerciseVisible(true)
+      : setIsAddNewExerciseVisible(false);
+    if (isExerciseNameInvalid) {
+      onChangeExerciseNameError(false);
+    }
+  };
 
-  //     return downloadUrl;
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const viewExercise = selectedExercise => {
+    navigation.navigate("Exercise", {
+      currentExercise: selectedExercise,
+      exerciseId: selectedExercise.key
+    });
+  };
 
-  // openImageLibrary = async selectedExercise => {
-  //   const result = await ImageHelpers.openImageLibrary();
+  const renderItem = ({ item }) => {
+    const key = JSON.stringify(item.key);
+    console.log(`key: ${key}`);
+    let swipeoutButtons = [
+      {
+        text: "Delete",
+        component: (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
+            <Ionicons name="ios-trash" size={24} color={colors.txtWhite} />
+          </View>
+        ),
+        backgroundColor: colors.bgDelete,
+        onPress: () => deleteExercise(item)
+      }
+    ];
 
-  //   if (result) {
-  //     this.props.toggleIsLoadingExercises(true);
-  //     const downloadUrl = await this.uploadImage(result, selectedExercise);
-  //     this.props.updateExerciseImage({ ...selectedExercise, uri: downloadUrl });
-  //     this.props.toggleIsLoadingExercises(false);
-  //   }
-  // };
+    if (!item.complete) {
+      swipeoutButtons.unshift({
+        text: "Mark Complete",
+        component: (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: colors.txtWhite }}>Mark as Complete</Text>
+          </View>
+        ),
+        backgroundColor: colors.bgSuccessDark,
+        onPress: () => markAsComplete(item)
+      });
+    } else {
+      swipeoutButtons.unshift({
+        text: "Mark Incomplete",
+        component: (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: colors.txtWhite }}>Mark Incomplete</Text>
+          </View>
+        ),
+        backgroundColor: colors.bgIncomplete,
+        onPress: () => markAsIncomplete(item)
+      });
+    }
 
-  // openCamera = async selectedExercise => {
-  //   const result = await ImageHelpers.openCamera();
-
-  //   if (result) {
-  //     this.props.toggleIsLoadingExercises(true);
-  //     const downloadUrl = await this.uploadImage(result, selectedExercise);
-  //     this.props.updateExerciseImage({ ...selectedExercise, uri: downloadUrl });
-  //     this.props.toggleIsLoadingExercises(false);
-  //   }
-  // };
-
-  // addExerciseImage = selectedExercise => {
-  //   // Same interface as https://faceworkout.github.io/react-native/docs/actionsheetios.html
-  //   const options = ["Select from Photos", "Camera", "Cancel"];
-  //   const cancelButtonIndex = 2;
-
-  //   this.props.showActionSheetWithOptions(
-  //     {
-  //       options,
-  //       cancelButtonIndex
-  //     },
-  //     buttonIndex => {
-  //       // Do something here depending on the button index selected
-  //       if (buttonIndex == 0) {
-  //         this.openImageLibrary(selectedExercise);
-  //       } else if (buttonIndex == 1) {
-  //         this.openCamera(selectedExercise);
-  //       }
-  //     }
-  //   );
-  // };
-
-  // renderItem = (item, index) => {
-  //   let swipeoutButtons = [
-  //     {
-  //       text: "Delete",
-  //       component: (
-  //         <View
-  //           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-  //         >
-  //           <Ionicons name="ios-trash" size={24} color={colors.txtWhite} />
-  //         </View>
-  //       ),
-  //       backgroundColor: colors.bgDelete,
-  //       onPress: () => this.deleteExercise(item, index)
-  //     }
-  //   ];
-
-  //   return (
-  //     <Swipeout
-  //       autoClose={true}
-  //       style={{ marginHorizontal: 5, marginVertical: 5 }}
-  //       backgroundColor={colors.bgMain}
-  //       right={swipeoutButtons}
-  //     >
-  //       <ListItem
-  //         editable
-  //         onPress={() => this.addExerciseImage(item)}
-  //         editable={true}
-  //         marginVertical={0}
-  //         item={item}
-  //       />
-  //     </Swipeout>
-  //   );
-  // };
-
-  render() {
-    console.log("render Exercises");
     return (
-      <View style={styles.container}>
-        <SafeAreaView />
-
-        <Text>Exercises</Text>
-        <SafeAreaView />
+      <View key={"exercise-" + item.key}>
+        <Swipeout
+          autoClose={true}
+          style={{ marginHorizontal: 5, marginVertical: 5 }}
+          backgroundColor={colors.bgMain}
+          right={swipeoutButtons}
+        >
+          <ListItem
+            navPress={() => viewExercise(item)}
+            editable
+            onPress={() => addExerciseImage(item)}
+            editable={true}
+            marginVertical={0}
+            item={item}
+          >
+            {item.complete && (
+              <Ionicons
+                style={{ marginRight: 5 }}
+                name="ios-checkmark"
+                color={colors.logoColor}
+                size={30}
+              />
+            )}
+          </ListItem>
+        </Swipeout>
       </View>
     );
-  }
+  };
+
+  return (
+    <View style={styles.container}>
+      <SafeAreaView />
+
+      <View style={styles.container}>
+        {isLoading && (
+          <View
+            style={{
+              ...StyleSheet.absoluteFill,
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              elevation: 1000
+            }}
+          >
+            <ActivityIndicator size="large" color={colors.logoColor} />
+          </View>
+        )}
+        <View style={styles.textInputContainer}>
+          <InputField
+            isBanner
+            onChangeText={text => onUpdateExerciseName(text)}
+            error={isExerciseNameInvalid}
+            keyboardType="default"
+            errorMessage={"Please enter a valid name."}
+            value={newExerciseName}
+            placeholder={"Name your next exercise"}
+            placeholderTextColor={colors.bgTextInputDark}
+          />
+        </View>
+        <FlatList
+          data={exercises}
+          renderItem={renderItem}
+          keyExtractor={item => item.key}
+          ListEmptyComponent={
+            !isLoading && (
+              <ListEmptyComponent text="Not Reading Any Exercises." />
+            )
+          }
+        />
+        <Animatable.View
+          animation={isAddNewExerciseVisible ? "slideInRight" : "slideOutRight"}
+        >
+          <CustomAction
+            position="right"
+            style={styles.addNewExerciseButton}
+            onPress={() => createExercise(newExerciseName)}
+          >
+            <Text style={styles.addNewExerciseButtonText}>+</Text>
+          </CustomAction>
+        </Animatable.View>
+      </View>
+      <SafeAreaView />
+    </View>
+  );
 }
-
-// const mapStateToProps = state => {
-//   return {
-//     exercises: state.exercises,
-//     currentUser: state.auth.currentUser
-//   };
-// };
-
-// const mapDispatchToProps = dispatch => {
-//   return {
-//     loadExercises: exercises =>
-//       dispatch({ type: "LOAD_EXERCISES_FROM_SERVER", payload: exercises }),
-//     addExercise: exercise =>
-//       dispatch({ type: "ADD_EXERCISE", payload: exercise }),
-//     toggleIsLoadingExercises: bool =>
-//       dispatch({ type: "TOGGLE_IS_LOADING_EXERCISES", payload: bool }),
-//     deleteExercise: exercise =>
-//       dispatch({ type: "DELETE_EXERCISE", payload: exercise }),
-//     updateExerciseImage: exercise =>
-//       dispatch({ type: "UPDATE_EXERCISE_IMAGE", payload: exercise })
-//   };
-// };
-
-// const wrapper = compose(
-//   connect(mapStateToProps, mapDispatchToProps),
-//   connectActionSheet
-// );
-
-// export default wrapper(WorkoutScreen);
-export default WorkoutScreen;
 
 const styles = StyleSheet.create({
   container: {
