@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { AsyncStorage } from "react-native";
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import { connect } from "react-redux";
@@ -22,16 +21,7 @@ class LiftLogger extends Component {
     this.checkIfLoggedIn();
   }
 
-  // getToken = async () => {
-  //   try {
-  //     let userData = await AsyncStorage.getItem("userData");
-  //   } catch (error) {
-  //     console.log("Something went wrong", error);
-  //   }
-  // };
-
   checkIfLoggedIn = async () => {
-    // this.getToken();
     let unsubscribe;
     try {
       unsubscribe = await firebase.auth().onIdTokenChanged(user => {

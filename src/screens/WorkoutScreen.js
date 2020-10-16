@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import {
   ActivityIndicator,
-  AsyncStorage,
   FlatList,
   SafeAreaView,
   StyleSheet,
@@ -49,17 +48,7 @@ export default function WorkoutScreen({ route }) {
   const [isExerciseNameInvalid, onChangeExerciseNameError] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
 
-  const getToken = async () => {
-    try {
-      let userData = await AsyncStorage.getItem("userData");
-      let data = JSON.parse(userData);
-    } catch (error) {
-      console.log("Something went wrong", error);
-    }
-  };
-
   const fetchExercises = async () => {
-    getToken;
     setIsLoading(true);
     if (workoutId) {
       console.log(`fetchExercises has workoutId`);

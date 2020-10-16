@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   ActivityIndicator,
-  AsyncStorage,
   FlatList,
   SafeAreaView,
   StyleSheet,
@@ -48,17 +47,7 @@ export default function HomeScreen({ props }) {
   const [newWorkoutName, setNewWorkoutName] = useState("");
   const [isWorkoutNameInvalid, onChangeWorkoutNameError] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
-
-  const getToken = async () => {
-    try {
-      let userData = await AsyncStorage.getItem("userData");
-      let data = JSON.parse(userData);
-    } catch (error) {
-      console.log("Something went wrong", error);
-    }
-  };
   fetchWorkouts = async () => {
-    getToken;
     setIsLoading(true);
     if (uid) {
       const response = await firebase

@@ -3,14 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import {
   ActivityIndicator,
-  AsyncStorage,
   FlatList,
   SafeAreaView,
   StyleSheet,
   Text,
   View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
 import * as firebase from "firebase/app";
@@ -48,17 +46,7 @@ export default function SetScreen({ route }) {
   const [isSetWeightInvalid, onChangeSetWeightError] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
 
-  const getToken = async () => {
-    try {
-      let userData = await AsyncStorage.getItem("userData");
-      let data = JSON.parse(userData);
-    } catch (error) {
-      console.log("Something went wrong", error);
-    }
-  };
-
   const fetchSets = async () => {
-    getToken;
     setIsLoading(true);
     if (exerciseId) {
       const response = await firebase
