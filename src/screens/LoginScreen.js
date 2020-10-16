@@ -75,21 +75,12 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1000,
-              elevation: 1000
-            }
-          ]}
-        >
-          <ActivityIndicator size="large" color={colors.logoColor} />
-        </View>
-      ) : null}
+      <ActivityIndicator
+        animating={isLoading}
+        size="large"
+        color={colors.logoColor}
+        style={styles.activityIndicator}
+      />
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <InputField
           isLogin
@@ -153,5 +144,11 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     marginTop: 10,
     width: 200
+  },
+  activityIndicator: {
+    ...StyleSheet.absoluteFill,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 1000
   }
 });

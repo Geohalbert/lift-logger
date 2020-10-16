@@ -155,9 +155,12 @@ export default function Camera({ route }) {
   return (
     <TouchableWithoutFeedback accessible={false}>
       <SafeAreaView style={styles.container}>
-        {isFetching && (
-          <ActivityIndicator style={styles.fetching} size="large" />
-        )}
+        <ActivityIndicator
+          animating={isLoading}
+          size="large"
+          color={colors.logoColor}
+          style={styles.activityIndicator}
+        />
         <TouchableOpacity
           hitSlop={{ top: 20, bottom: 20, left: 50, right: 50 }}
           onPress={() => {
@@ -187,6 +190,12 @@ export default function Camera({ route }) {
 }
 
 const styles = StyleSheet.create({
+  activityIndicator: {
+    ...StyleSheet.absoluteFill,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 1000
+  },
   closeButton: {
     position: "absolute",
     right: 20,

@@ -14,12 +14,11 @@ import { Ionicons } from "@expo/vector-icons";
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
 import * as firebase from "firebase/app";
+import RenderItem from "../components/RenderItem";
 import "firebase/storage";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
-import ListItem from "../components/ListItem";
 import * as Animatable from "react-native-animatable";
 import ListEmptyComponent from "../components/ListEmptyComponent";
-import Swipeout from "react-native-swipeout";
 
 import InputField from "../components/InputField";
 import {
@@ -43,8 +42,10 @@ export default function SetScreen({ route }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [isAddNewSetVisible, setIsAddNewSetVisible] = useState(false);
-  const [newSetName, setNewSetName] = useState("");
-  const [isSetNameInvalid, onChangeSetNameError] = useState(false);
+  const [newSetReps, setNewSetReps] = useState("");
+  const [newSetWeight, setNewSetWeight] = useState("");
+  const [isSetRepsInvalid, onChangeSetRepsError] = useState(false);
+  const [isSetWeightInvalid, onChangeSetWeightError] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
 
   const getToken = async () => {
@@ -60,7 +61,6 @@ export default function SetScreen({ route }) {
     getToken;
     setIsLoading(true);
     if (exerciseId) {
-      console.log(`fetchSets has exerciseId`);
       const response = await firebase
         .database()
         .ref("exercises/" + exerciseId)
@@ -80,28 +80,22 @@ export default function SetScreen({ route }) {
     fetchSets();
   }, []);
 
-  const newSet = setName => {
+  const newSet = (reps, weight) => {
     const stamp = new Date().getTime();
     const setPayload = {
       exerciseId: exerciseId,
-      name: setName,
+      reps: reps,
+      weight: weight,
       complete: false,
       createdAt: stamp,
       updatedAt: stamp
     };
 
-    // const key = firebase
-    //   .database()
-    //   .ref("/exercises/" + exerciseId + "/sets/")
-    //   .push().key;
-
-    // const updates = {};
-    // updates["/exercises/" + exerciseId + "/sets/" + key] = setPayload;
     firebase
       .database()
       .ref("/exercises/" + exerciseId + "/sets/")
       .push(setPayload);
-    setNewSetName("");
+    setNewSetReps("");
     dispatch(addSet(setPayload));
   };
 
@@ -117,22 +111,22 @@ export default function SetScreen({ route }) {
     return false;
   };
 
-  const createSet = setName => {
+  const createSet = ({ set }) => {
     return firebase
       .database()
       .ref("exercises/" + exerciseId)
       .child("sets")
-      .orderByChild("name")
-      .equalTo(setName)
+      .orderByChild("createdAt")
+      .equalTo(set.createdAt)
       .once("value", snapshot => {
         if (snapshot.exists()) {
           let setsArray = snapshotToArray(snapshot);
           const result = hasDuplicates(setsArray)
             ? alert("A set with the same name has already been created today.")
-            : newSet(setName);
+            : newSet(set);
           return result;
         } else {
-          newSet(setName);
+          newSet(set);
         }
       });
   };
@@ -212,13 +206,22 @@ export default function SetScreen({ route }) {
     setIsFocused(false);
   };
 
-  const onUpdateSetName = text => {
-    setNewSetName(text);
+  const onUpdateSetReps = text => {
+    setNewSetReps(text);
     text.length > 0
       ? setIsAddNewSetVisible(true)
       : setIsAddNewSetVisible(false);
-    if (isSetNameInvalid) {
-      onChangeSetNameError(false);
+    if (isSetRepsInvalid) {
+      onChangeSetRepsError(false);
+    }
+  };
+  const onUpdateSetWeight = text => {
+    setNewSetWeight(text);
+    text.length > 0
+      ? setIsAddNewSetVisible(true)
+      : setIsAddNewSetVisible(false);
+    if (isSetWeightInvalid) {
+      onChangeSetWeightError(false);
     }
   };
 
@@ -229,79 +232,17 @@ export default function SetScreen({ route }) {
     });
   };
 
-  const renderItem = ({ item }) => {
-    const key = JSON.stringify(item.key);
-    console.log(`key: ${key}`);
-    let swipeoutButtons = [
-      {
-        text: "Delete",
-        component: (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Ionicons name="ios-trash" size={24} color={colors.txtWhite} />
-          </View>
-        ),
-        backgroundColor: colors.bgDelete,
-        onPress: () => deleteSet(item)
-      }
-    ];
-
-    if (!item.complete) {
-      swipeoutButtons.unshift({
-        text: "Mark Complete",
-        component: (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Text style={{ color: colors.txtWhite }}>Mark as Complete</Text>
-          </View>
-        ),
-        backgroundColor: colors.bgSuccessDark,
-        onPress: () => markAsComplete(item)
-      });
-    } else {
-      swipeoutButtons.unshift({
-        text: "Mark Incomplete",
-        component: (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Text style={{ color: colors.txtWhite }}>Mark Incomplete</Text>
-          </View>
-        ),
-        backgroundColor: colors.bgIncomplete,
-        onPress: () => markAsIncomplete(item)
-      });
-    }
-
+  const RenderSet = ({ item }) => {
     return (
-      <View key={"set-" + item.key}>
-        <Swipeout
-          autoClose={true}
-          style={{ marginHorizontal: 5, marginVertical: 5 }}
-          backgroundColor={colors.bgMain}
-          right={swipeoutButtons}
-        >
-          <ListItem
-            navPress={() => viewSet(item)}
-            editable
-            onPress={() => addSetImage(item)}
-            editable={true}
-            marginVertical={0}
-            item={item}
-          >
-            {item.complete && (
-              <Ionicons
-                style={{ marginRight: 5 }}
-                name="ios-checkmark"
-                color={colors.logoColor}
-                size={30}
-              />
-            )}
-          </ListItem>
-        </Swipeout>
-      </View>
+      <RenderItem
+        item={item}
+        deleteFunction={deleteSet}
+        markItemFunction={markAsComplete}
+        unmarkItemFunction={markAsIncomplete}
+        navFunction={viewSet}
+        addImage={null}
+        type={"set"}
+      />
     );
   };
 
@@ -310,34 +251,37 @@ export default function SetScreen({ route }) {
       <SafeAreaView />
 
       <View style={styles.container}>
-        {isLoading && (
-          <View
-            style={{
-              ...StyleSheet.absoluteFill,
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1000,
-              elevation: 1000
-            }}
-          >
-            <ActivityIndicator size="large" color={colors.logoColor} />
-          </View>
-        )}
+        <ActivityIndicator
+          animating={isLoading}
+          size="large"
+          color={colors.logoColor}
+          style={styles.activityIndicator}
+        />
         <View style={styles.textInputContainer}>
           <InputField
-            isBanner
-            onChangeText={text => onUpdateSetName(text)}
-            error={isSetNameInvalid}
-            keyboardType="default"
-            errorMessage={"Please enter a valid name."}
-            value={newSetName}
-            placeholder={"Name your next set"}
+            // isBanner
+            onChangeText={text => onUpdateSetReps(text)}
+            error={isSetRepsInvalid}
+            keyboardType="numeric"
+            errorMessage={"Please enter a valid integer."}
+            value={newSetReps}
+            placeholder={"Set your next set's reps"}
+            placeholderTextColor={colors.bgTextInputDark}
+          />
+          <InputField
+            // isBanner
+            onChangeText={text => onUpdateSetWeight(text)}
+            error={isSetWeightInvalid}
+            keyboardType="numeric"
+            errorMessage={"Please enter a valid integer."}
+            value={newSetWeight}
+            placeholder={"Set your next set's weight"}
             placeholderTextColor={colors.bgTextInputDark}
           />
         </View>
         <FlatList
           data={sets}
-          renderItem={renderItem}
+          renderItem={RenderSet}
           keyExtractor={item => item.key}
           ListEmptyComponent={
             !isLoading && <ListEmptyComponent text="Not Reading Any Sets." />
@@ -361,6 +305,12 @@ export default function SetScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
+  activityIndicator: {
+    ...StyleSheet.absoluteFill,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 1000
+  },
   container: {
     flex: 1,
     backgroundColor: colors.bgMain
