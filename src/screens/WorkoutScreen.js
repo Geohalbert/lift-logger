@@ -231,6 +231,7 @@ export default function WorkoutScreen({ route }) {
 
   const viewExercise = selectedExercise => {
     navigation.navigate("Exercise", {
+      name: selectedExercise.name,
       currentExercise: selectedExercise,
       exerciseId: selectedExercise.key
     });

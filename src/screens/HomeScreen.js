@@ -229,6 +229,7 @@ export default function HomeScreen({ props }) {
 
   const viewWorkout = selectedWorkout => {
     navigation.navigate("Workout", {
+      name: selectedWorkout.name,
       currentWorkout: selectedWorkout,
       workoutId: selectedWorkout.key
     });

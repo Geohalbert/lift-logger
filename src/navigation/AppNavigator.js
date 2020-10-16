@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import ExerciseScreen from "../screens/ExerciseScreen";
 import HomeScreen from "../screens/HomeScreen";
 import WorkoutScreen from "../screens/WorkoutScreen";
 import SettingsScreen from "../screens/SettingsScreen";
@@ -47,6 +48,8 @@ getHeaderTitle = route => {
       return "Workouts";
     case "Workout":
       return "Exercises";
+    case "Exercise":
+      return "Sets";
     case "WorkoutsIncomplete":
       return "Workouts Incomplete";
     case "WorkoutsComplete":
@@ -172,7 +175,7 @@ export function AppStack() {
         name="Home"
         component={HomeTabNavigator}
         options={({ route }) => ({
-          title: getHeaderTitle(route),
+          title: "Workouts",
           headerLeft: () => (
             <Ionicons
               onPress={() => navigation.openDrawer()}
@@ -187,7 +190,18 @@ export function AppStack() {
       <Stack.Screen
         name="Workout"
         component={WorkoutScreen}
-        options={{ headerBackTitleVisible: true }}
+        options={({ route }) => ({
+          title: route.params.name,
+          headerBackTitleVisible: true
+        })}
+      />
+      <Stack.Screen
+        name="Exercise"
+        component={ExerciseScreen}
+        options={({ route }) => ({
+          title: route.params.name,
+          headerBackTitleVisible: true
+        })}
       />
     </Stack.Navigator>
   );
