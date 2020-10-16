@@ -1,11 +1,14 @@
 import { createStore, combineReducers } from "redux";
 
-import workoutsReducer from "../reducers/WorkoutsReducer";
 import authReducer from "../reducers/authReducer";
+import exercisesReducer from "../reducers/ExercisesReducer";
+import workoutsReducer from "../reducers/WorkoutsReducer";
+
 const store = createStore(
   combineReducers({
-    workouts: workoutsReducer,
-    auth: authReducer
+    auth: authReducer,
+    exercises: exercisesReducer,
+    workouts: workoutsReducer
   })
 );
 
