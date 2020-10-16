@@ -1,4 +1,5 @@
 import React from "react";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -12,6 +13,8 @@ import WorkoutsCompleteScreen from "../screens/HomeTabNavigator/WorkoutsComplete
 import WorkoutsCountContainer from "../redux/containers/WorkoutsCountContainer";
 import WelcomeScreen from "../navigation/WelcomeScreen";
 import LoginScreen from "../screens/LoginScreen";
+
+import Camera from "../screens/modals/Camera";
 
 import { useNavigation } from "@react-navigation/native";
 import colors from "../assets/colors";
@@ -143,19 +146,13 @@ export function AuthStack() {
 
 export function RootStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.bgMain
-        },
-        headerTintColor: "white"
-      }}
-    >
+    <Stack.Navigator mode="modal">
       <Stack.Screen
         name="Main"
         component={AppStack}
         options={{ headerShown: false }}
       />
+      <Stack.Screen name="Camera" component={Camera} />
     </Stack.Navigator>
   );
 }

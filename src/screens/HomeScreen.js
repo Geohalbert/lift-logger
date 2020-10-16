@@ -26,7 +26,7 @@ import { compose } from "redux";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
-import * as ImageHelpers from "../helpers/ImageHelpers";
+
 import { useNavigation } from "@react-navigation/native";
 
 import InputField from "../components/InputField";
@@ -39,7 +39,7 @@ import {
   updateWorkout
 } from "../redux/actions/workouts";
 
-export default function HomeScreen() {
+export default function HomeScreen({ props }) {
   const workouts = useSelector(state => state.workouts.workouts);
   const workoutsIncomplete = useSelector(
     state => state.workouts.workoutsIncomplete
@@ -57,12 +57,12 @@ export default function HomeScreen() {
   const [isAddNewWorkoutVisible, setIsAddNewWorkoutVisible] = useState(false);
   const [newWorkoutName, setNewWorkoutName] = useState("");
   const [isWorkoutNameInvalid, onChangeWorkoutNameError] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
 
   const getToken = async () => {
     try {
       let userData = await AsyncStorage.getItem("userData");
       let data = JSON.parse(userData);
-      console.log(data);
     } catch (error) {
       console.log("Something went wrong", error);
     }
@@ -215,74 +215,14 @@ export default function HomeScreen() {
     }
   };
 
-  const uploadImage = async (image, selectedWorkout) => {
-    const ref = firebase
-      .storage()
-      .ref("workouts")
-      .child(selectedWorkout.key);
-
-    try {
-      //converting to blob
-      const blob = await ImageHelpers.prepareBlob(image.uri);
-      const snapshot = await ref.put(blob);
-
-      let downloadUrl = await ref.getDownloadURL();
-
-      await firebase
-        .database()
-        .ref("users/" + currentUser.uid + "/workouts")
-        .child(selectedWorkout.key)
-        .update({ image: downloadUrl });
-
-      blob.close();
-
-      return downloadUrl;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const openImageLibrary = async selectedWorkout => {
-    const result = await ImageHelpers.openImageLibrary();
-
-    if (result) {
-      setIsLoading(true);
-      const downloadUrl = await uploadImage(result, selectedWorkout);
-      props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
-      setIsLoading(false);
-    }
-  };
-
-  const openCamera = async selectedWorkout => {
-    const result = await ImageHelpers.openCamera();
-
-    if (result) {
-      setIsLoading(true);
-      const downloadUrl = await uploadImage(result, selectedWorkout);
-      props.updateWorkoutImage({ ...selectedWorkout, uri: downloadUrl });
-      setIsLoading(false);
-    }
-  };
-
   const addWorkoutImage = selectedWorkout => {
-    // Same interface as https://faceworkout.github.io/react-native/docs/actionsheetios.html
-    const options = ["Select from Photos", "Camera", "Cancel"];
-    const cancelButtonIndex = 2;
-
-    props.showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex
-      },
-      buttonIndex => {
-        // Do something here depending on the button index selected
-        if (buttonIndex == 0) {
-          openImageLibrary(selectedWorkout);
-        } else if (buttonIndex == 1) {
-          openCamera(selectedWorkout);
-        }
-      }
-    );
+    navigation.navigate("Camera", {
+      uid: uid,
+      selectedWorkout: selectedWorkout,
+      setIsFocused: setIsFocused,
+      uri: selectedWorkout.image || null
+    });
+    setIsFocused(false);
   };
 
   const onUpdateWorkoutName = text => {
@@ -378,7 +318,6 @@ export default function HomeScreen() {
     );
   };
 
-  console.log("render");
   return (
     <View style={styles.container}>
       <SafeAreaView />

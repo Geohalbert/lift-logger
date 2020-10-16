@@ -7,6 +7,7 @@ export const GET_WORKOUT = "GET_WORKOUT";
 export const LOAD_WORKOUTS_FROM_SERVER = "LOAD_WORKOUTS_FROM_SERVER";
 export const DELETE_WORKOUT = "DELETE_WORKOUT";
 export const UPDATE_WORKOUT = "UPDATE_WORKOUT";
+export const UPDATE_WORKOUT_IMAGE = "UPDATE_WORKOUT_IMAGE";
 export const MARK_WORKOUT_AS_COMPLETE = "MARK_WORKOUT_AS_COMPLETE";
 export const MARK_WORKOUT_AS_INCOMPLETE = "MARK_WORKOUT_AS_INCOMPLETE";
 
@@ -50,6 +51,13 @@ export const removeWorkout = workout => {
 };
 
 export const updateWorkout = workout => {
+  return {
+    type: UPDATE_WORKOUT,
+    payload: workout
+  };
+};
+
+export const updateWorkoutImage = workout => {
   return {
     type: UPDATE_WORKOUT,
     payload: workout
