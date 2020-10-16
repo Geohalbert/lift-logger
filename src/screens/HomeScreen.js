@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
+  ActivityIndicator,
+  AsyncStorage,
+  FlatList,
+  SafeAreaView,
   StyleSheet,
   Text,
-  View,
-  SafeAreaView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Image,
-  ActivityIndicator,
-  AsyncStorage
+  View
 } from "react-native";
-import WorkoutCount from "../components/WorkoutCount";
-import WorkoutScreen from "./WorkoutScreen";
 import { Ionicons } from "@expo/vector-icons";
 import CustomAction from "../components/CustomAction";
 import colors from "../assets/colors";
@@ -22,8 +17,6 @@ import "firebase/storage";
 import { snapshotToArray } from "../helpers/firebaseHelpers";
 import ListItem from "../components/ListItem";
 import * as Animatable from "react-native-animatable";
-import { compose } from "redux";
-import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import Swipeout from "react-native-swipeout";
 
@@ -31,12 +24,11 @@ import { useNavigation } from "@react-navigation/native";
 
 import InputField from "../components/InputField";
 import {
-  loadWorkouts,
   addWorkout,
+  loadWorkouts,
   markWorkoutAsComplete,
   markWorkoutAsIncomplete,
-  removeWorkout,
-  updateWorkout
+  removeWorkout
 } from "../redux/actions/workouts";
 
 export default function HomeScreen({ props }) {
