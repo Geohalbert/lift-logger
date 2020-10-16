@@ -184,16 +184,6 @@ export default function SetScreen({ route }) {
     }
   };
 
-  const addSetImage = selectedSet => {
-    navigation.navigate("Camera", {
-      uid: uid,
-      selectedSet: selectedSet,
-      setIsFocused: setIsFocused,
-      uri: selectedSet.image || null
-    });
-    setIsFocused(false);
-  };
-
   const onUpdateSetReps = text => {
     setNewSetReps(text);
     text.length > 0

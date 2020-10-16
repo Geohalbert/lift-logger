@@ -5,12 +5,12 @@ import NetworkImage from "react-native-image-progress";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 
 const ListItem = ({
-  item,
   children,
-  marginVertical,
   editable,
-  onPress,
-  navPress
+  item,
+  marginVertical,
+  navPress,
+  onPress
 }) => (
   <View style={[styles.listItemContainer, { marginVertical }]}>
     <View style={styles.imageContainer}>
@@ -73,36 +73,33 @@ ListItem.defaultProps = {
 export default ListItem;
 
 const styles = StyleSheet.create({
-  listItemContainer: {
-    minHeight: 100,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: colors.listItemBg,
-    alignItems: "center"
-  },
   date: {
-    fontWeight: "100",
+    color: colors.txtWhite,
     fontSize: 14,
-    color: colors.txtWhite
+    fontWeight: "100"
   },
-  workoutTimes: {
+  image: {
+    borderRadius: 35,
     flex: 1,
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingRight: 10
+    height: null,
+    resizeMode: "contain",
+    width: null
   },
   imageContainer: {
     height: 70,
-    width: 70,
-    marginLeft: 10
+    marginLeft: 10,
+    width: 70
   },
-  image: {
-    flex: 1,
-    height: null,
-    width: null,
-    borderRadius: 35,
-    resizeMode: "contain"
+  listItemContainer: {
+    alignItems: "center",
+    backgroundColor: colors.listItemBg,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 100
+  },
+  listItemTitle: {
+    color: colors.txtWhite,
+    fontSize: 22
   },
   workoutData: {
     flex: 1,
@@ -110,8 +107,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingLeft: 10
   },
-  listItemTitle: {
-    fontSize: 22,
-    color: colors.txtWhite
+  workoutTimes: {
+    alignItems: "flex-end",
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    paddingRight: 10
   }
 });
