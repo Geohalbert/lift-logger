@@ -10,6 +10,7 @@ export default function RenderItem(props) {
   const {
     addImage,
     deleteFunction,
+    index,
     item,
     markItemFunction,
     navFunction,
@@ -76,6 +77,7 @@ export default function RenderItem(props) {
           editable={true}
           marginVertical={0}
           item={item}
+          index={index}
         >
           {item.complete && (
             <Ionicons

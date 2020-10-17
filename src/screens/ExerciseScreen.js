@@ -68,12 +68,12 @@ export default function SetScreen({ route }) {
     fetchSets();
   }, []);
 
-  const newSet = (reps, weight) => {
+  const newSet = () => {
     const stamp = new Date().getTime();
     const setPayload = {
       exerciseId: exerciseId,
-      reps: reps,
-      weight: weight,
+      reps: newSetReps,
+      weight: newSetWeight,
       complete: false,
       createdAt: stamp,
       updatedAt: stamp
@@ -85,38 +85,6 @@ export default function SetScreen({ route }) {
       .push(setPayload);
     setNewSetReps("");
     dispatch(addSet(setPayload));
-  };
-
-  const hasDuplicates = array => {
-    const today = new Date().toLocaleDateString("en-US");
-    for (let i = 0; i < array.length; ++i) {
-      let obj = array[i];
-      let dateCreated = new Date(obj.createdAt).toLocaleDateString("en-US");
-      if (dateCreated === today) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const createSet = ({ set }) => {
-    return firebase
-      .database()
-      .ref("exercises/" + exerciseId)
-      .child("sets")
-      .orderByChild("createdAt")
-      .equalTo(set.createdAt)
-      .once("value", snapshot => {
-        if (snapshot.exists()) {
-          let setsArray = snapshotToArray(snapshot);
-          const result = hasDuplicates(setsArray)
-            ? alert("A set with the same name has already been created today.")
-            : newSet(set);
-          return result;
-        } else {
-          newSet(set);
-        }
-      });
   };
 
   const markAsComplete = selectedSet => {
@@ -186,7 +154,7 @@ export default function SetScreen({ route }) {
 
   const onUpdateSetReps = text => {
     setNewSetReps(text);
-    text.length > 0
+    text.length > 0 && newSetWeight.length > 0
       ? setIsAddNewSetVisible(true)
       : setIsAddNewSetVisible(false);
     if (isSetRepsInvalid) {
@@ -195,7 +163,7 @@ export default function SetScreen({ route }) {
   };
   const onUpdateSetWeight = text => {
     setNewSetWeight(text);
-    text.length > 0
+    text.length > 0 && newSetReps.length > 0
       ? setIsAddNewSetVisible(true)
       : setIsAddNewSetVisible(false);
     if (isSetWeightInvalid) {
@@ -210,10 +178,11 @@ export default function SetScreen({ route }) {
     });
   };
 
-  const RenderSet = ({ item }) => {
+  const RenderSet = ({ item, index }) => {
     return (
       <RenderItem
         item={item}
+        index={index}
         deleteFunction={deleteSet}
         markItemFunction={markAsComplete}
         unmarkItemFunction={markAsIncomplete}
@@ -259,8 +228,19 @@ export default function SetScreen({ route }) {
         </View>
         <FlatList
           data={sets}
-          renderItem={RenderSet}
-          keyExtractor={item => item.key}
+          renderItem={({ item, index }) => (
+            <RenderItem
+              item={item}
+              index={index}
+              deleteFunction={deleteSet}
+              markItemFunction={markAsComplete}
+              unmarkItemFunction={markAsIncomplete}
+              navFunction={viewSet}
+              addImage={null}
+              type={"set"}
+            />
+          )}
+          keyExtractor={(item, index) => item.key}
           ListEmptyComponent={
             !isLoading && <ListEmptyComponent text="Not Reading Any Sets." />
           }
@@ -271,7 +251,7 @@ export default function SetScreen({ route }) {
           <CustomAction
             position="right"
             style={styles.addNewSetButton}
-            onPress={() => createSet(newSetName)}
+            onPress={() => newSet()}
           >
             <Text style={styles.addNewSetButtonText}>+</Text>
           </CustomAction>
