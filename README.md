@@ -7,6 +7,7 @@ I plan on using multiple tech stacks for this project which will be separated vi
 
 ## Initial tech stack:
 
+- React Native
 - Firebase (Realtime database, media storage, authentication, trigger functions)
 - React Hooks
 - Redux (while not an ideal use of redux, included for the sake of demonstration)
