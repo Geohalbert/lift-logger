@@ -51,7 +51,6 @@ export default function WorkoutScreen({ route }) {
   const fetchExercises = async () => {
     setIsLoading(true);
     if (workoutId) {
-      console.log(`fetchExercises has workoutId`);
       const response = await firebase
         .database()
         .ref("workouts/" + workoutId)
