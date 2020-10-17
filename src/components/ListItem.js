@@ -58,7 +58,10 @@ export default function ListItem(props) {
 
   const renderDefault = () => {
     return (
-      <View style={[styles.listItemContainer, { marginVertical }]}>
+      <View
+        style={[styles.listItemContainer, { marginVertical }]}
+        key={"item" + item.key}
+      >
         <ImageContainer />
         <View style={styles.workoutData}>
           <TouchableOpacity onPress={() => navPress(item)}>
@@ -80,7 +83,10 @@ export default function ListItem(props) {
 
   const renderSet = () => {
     return (
-      <View style={[styles.listItemContainer, { marginVertical }]}>
+      <View
+        style={[styles.listItemContainer, { marginVertical }]}
+        key={"set" + item.key}
+      >
         <View style={styles.setData}>
           <Text style={styles.set}>Set {index + 1}</Text>
           <Text style={styles.set}>Reps: {item.reps}</Text>

@@ -57,7 +57,7 @@ export default function SetScreen({ route }) {
         .once("value");
 
       let setsArray = snapshotToArray(response);
-      dispatch(loadSets(setsArray.reverse()));
+      dispatch(loadSets(setsArray));
       setIsLoading(false);
     } else {
       setIsLoading(false);
@@ -68,7 +68,7 @@ export default function SetScreen({ route }) {
     fetchSets();
   }, []);
 
-  const newSet = () => {
+  const newSet = async () => {
     const stamp = new Date().getTime();
     const setPayload = {
       exerciseId: exerciseId,
@@ -79,10 +79,15 @@ export default function SetScreen({ route }) {
       updatedAt: stamp
     };
 
-    firebase
+    const key = firebase
       .database()
       .ref("/exercises/" + exerciseId + "/sets/")
-      .push(setPayload);
+      .push().key;
+
+    await firebase
+      .database()
+      .ref("/exercises/" + exerciseId + "/sets/" + key)
+      .set(setPayload);
     setNewSetReps("");
     setNewSetWeight("");
     setIsAddNewSetVisible(false);
@@ -101,7 +106,7 @@ export default function SetScreen({ route }) {
       const updatedSet = Object.assign(selectedSet, updates);
       firebase
         .database()
-        .ref("exercises/" + exerciseId + "/sets")
+        .ref("exercises/" + exerciseId + "/sets/")
         .child(selectedSet.key)
         .update(updates);
 
@@ -125,7 +130,7 @@ export default function SetScreen({ route }) {
       const updatedSet = Object.assign(selectedSet, updates);
       firebase
         .database()
-        .ref("exercises/" + exerciseId + "/sets")
+        .ref("exercises/" + exerciseId + "/sets/")
         .child(selectedSet.key)
         .update(updates);
 
@@ -142,7 +147,7 @@ export default function SetScreen({ route }) {
     try {
       firebase
         .database()
-        .ref("exercises/" + exerciseId + "/sets")
+        .ref("exercises/" + exerciseId + "/sets/")
         .child(selectedSet.key)
         .remove();
 
