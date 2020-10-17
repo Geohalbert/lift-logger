@@ -82,7 +82,7 @@ export default function ListItem(props) {
     return (
       <View style={[styles.listItemContainer, { marginVertical }]}>
         <View style={styles.setData}>
-          <Text style={styles.set}>Set{index + 1}</Text>
+          <Text style={styles.set}>Set {index + 1}</Text>
           <Text style={styles.set}>Reps: {item.reps}</Text>
           <Text style={styles.set}>Weight: {item.weight}</Text>
         </View>

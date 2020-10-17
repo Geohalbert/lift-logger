@@ -84,6 +84,8 @@ export default function SetScreen({ route }) {
       .ref("/exercises/" + exerciseId + "/sets/")
       .push(setPayload);
     setNewSetReps("");
+    setNewSetWeight("");
+    setIsAddNewSetVisible(false);
     dispatch(addSet(setPayload));
   };
 
@@ -178,21 +180,6 @@ export default function SetScreen({ route }) {
     });
   };
 
-  const RenderSet = ({ item, index }) => {
-    return (
-      <RenderItem
-        item={item}
-        index={index}
-        deleteFunction={deleteSet}
-        markItemFunction={markAsComplete}
-        unmarkItemFunction={markAsIncomplete}
-        navFunction={viewSet}
-        addImage={null}
-        type={"set"}
-      />
-    );
-  };
-
   return (
     <View style={styles.container}>
       <SafeAreaView />
@@ -205,24 +192,23 @@ export default function SetScreen({ route }) {
           style={styles.activityIndicator}
         />
         <View style={styles.textInputContainer}>
+          <Text style={styles.newSet}>Set {sets.length + 1}: </Text>
           <InputField
-            // isBanner
             onChangeText={text => onUpdateSetReps(text)}
             error={isSetRepsInvalid}
             keyboardType="numeric"
             errorMessage={"Please enter a valid integer."}
             value={newSetReps}
-            placeholder={"Set your next set's reps"}
+            placeholder={"Reps"}
             placeholderTextColor={colors.bgTextInputDark}
           />
           <InputField
-            // isBanner
             onChangeText={text => onUpdateSetWeight(text)}
             error={isSetWeightInvalid}
             keyboardType="numeric"
             errorMessage={"Please enter a valid integer."}
             value={newSetWeight}
-            placeholder={"Set your next set's weight"}
+            placeholder={"Weight"}
             placeholderTextColor={colors.bgTextInputDark}
           />
         </View>
@@ -284,8 +270,9 @@ const styles = StyleSheet.create({
     fontSize: 24
   },
   textInputContainer: {
-    height: 50,
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     margin: 5
   },
   textInput: {
@@ -314,6 +301,9 @@ const styles = StyleSheet.create({
   markAsCompleteButtonText: {
     fontWeight: "bold",
     color: "white"
+  },
+  newSet: {
+    color: colors.txtWhite
   },
   addNewSetButton: {
     backgroundColor: colors.bgPrimary,
